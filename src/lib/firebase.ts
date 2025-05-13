@@ -1,9 +1,9 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp, FirebaseOptions } from "firebase/app";
-import { getFirestore, enableIndexedDbPersistence, connectFirestoreEmulator } from "firebase/firestore";
-import { getAuth, connectAuthEmulator } from "firebase/auth";
-import { getStorage, connectStorageEmulator } from "firebase/storage";
-import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
+import { getFirestore, enableIndexedDbPersistence, connectFirestoreEmulator } from "@firebase/firestore";
+import { getAuth, connectAuthEmulator } from "@firebase/auth";
+import { getStorage, connectStorageEmulator } from "@firebase/storage";
+import { getFunctions, connectFunctionsEmulator } from "@firebase/functions";
 
 // Your web app's Firebase configuration
 // IMPORTANT: For production, configure these in environment variables
@@ -47,7 +47,7 @@ const isFirebaseConfigValid = Object.values(firebaseConfig).every(value =>
 );
 
 // Use environment variables if available, otherwise use fallback config
-// For production builds, we temporarily allow fallback config for testing
+// For testing, always use the fallback config
 const config = isFirebaseConfigValid
   ? firebaseConfig 
   : devFallbackConfig;
@@ -57,7 +57,7 @@ if (process.env.NODE_ENV === 'development' && !isFirebaseConfigValid) {
 }
 
 if (process.env.NODE_ENV === 'production' && !isFirebaseConfigValid) {
-  console.warn('WARNING: Using fallback Firebase config in production for testing. Use environment variables in actual production.');
+  console.warn('WARNING: Using fallback Firebase config in production for testing purposes.');
 }
 
 // Initialize Firebase

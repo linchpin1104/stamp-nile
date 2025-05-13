@@ -1,7 +1,24 @@
-
-
-import type { Program, User, InteractiveScenario, Week, ChecklistItem, ActionItem, TextContent, VideoContent, CompanyDocument, LearningElement, VideoChoiceGroup, PsychologicalTestContent, QuestionAnswerSessionContent, MissionReminderContent, OXQuizContent, PsychologicalTestQuestion, QAItem, OXQuizQuestion as OXQuizQuestionType, ActionItemContent, TodoListActionItemContent, ConversationalResponseActionItemContent, DialogueActivityActionItemContent, JournalPromptActionItemContent, ChildInfo, PsychologicalFactor, ResultComment, UserMission, ProgramCompletion, Voucher, Banner, TodoListItem, MoodEntry } from '@/types';
+import type { Program, User, InteractiveScenario, TextContent, VideoContent, CompanyDocument, PsychologicalTestContent, QuestionAnswerSessionContent, MissionReminderContent, OXQuizContent, ActionItemContent, TodoListActionItemContent, ConversationalResponseActionItemContent, DialogueActivityActionItemContent, JournalPromptActionItemContent, Voucher, Banner } from '@/types';
 import { format, subDays, addDays } from 'date-fns';
+
+// ChecklistType 내부에서 사용하기 위한 인터페이스 정의
+interface ChecklistType {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  items: Array<{
+    id: string;
+    text: string;
+    itemType: string;
+    category?: string;
+    options?: Array<{
+      id: string;
+      text: string;
+      value: number;
+    }>;
+  }>;
+}
 
 const VOUCHERS_STORAGE_KEY = 'mockVouchers';
 const BANNERS_STORAGE_KEY = 'mockBanners';
@@ -111,8 +128,8 @@ const p1w2StressTestContent: PsychologicalTestContent = {
   overallResultComments: [
     { id: generateId('orc-low'), scoreRange: [1, 2.5], categoryLabel: 'Generally Low Stress', comment: 'Your overall stress levels related to returning to work appear relatively low. Continue to build on your strengths and preparedness.' },
     { id: generateId('orc-mod'), scoreRange: [2.6, 3.5], categoryLabel: 'Moderate Stress Levels', comment: 'You are experiencing a moderate amount of stress. Identify specific areas of concern from the factor results and focus on strategies provided in this program.' },
-    { id: generateId('orc-high'), scoreRange: [3.6, 5], categoryLabel: 'Higher Stress Levels Indicated', comment: 'Returning to work seems to be a significant source of stress for you. It’s important to utilize all available supports and strategies. This program is designed to help you navigate these challenges.' },
-  ],
+    { id: generateId('orc-high'), scoreRange: [3.6, 5], categoryLabel: 'Higher Stress Levels Indicated', comment: 'Returning to work seems to be a significant source of stress for you. It\'s important to utilize all available supports and strategies. This program is designed to help you navigate these challenges.' }
+  ]
 };
 
 
@@ -133,6 +150,7 @@ const program1ReturningParent: Program = {
   imageUrl: 'https://picsum.photos/seed/program1/600/400', targetAudience: 'Parents of infants (0-12 months) returning to work',
   tags: ['returning to work', 'infant care', 'work-life balance', 'corporate', 'parental leave'],
   companySpecificDocuments: [p1CompanyDoc],
+  paymentType: 'free',
   weeks: [
     { id: 'p1w1', weekNumber: 1, title: 'Returning to Work: Are You Ready?', summary: 'Assess your readiness and identify key areas.',
       learningElements: [
@@ -212,11 +230,15 @@ const p2MissionReminders = {
 };
 
 const program2ToddlerDiscipline: Program = {
-  id: 'program2-toddler-time-positive-discipline', slug: 'toddler-time-positive-discipline', title: 'Toddler Time: Positive Discipline',
-  description: 'Learn effective and positive strategies for navigating common toddler behaviors.',
-  longDescription: 'This program focuses on understanding toddler development and applying positive discipline techniques to foster cooperation, manage tantrums, and build a strong parent-child bond. Explore practical tools and reflective exercises.',
-  imageUrl: 'https://picsum.photos/seed/program2/600/400', targetAudience: 'Parents of toddlers (18 months - 3 years)',
-  tags: ['toddler behavior', 'positive discipline', 'tantrums', 'parenting skills'],
+  id: 'program2-toddler-discipline', slug: 'toddler-discipline', title: 'Stamp36: Toddler Time: Positive Discipline',
+  description: 'A 3-week program for parents of toddlers focusing on positive discipline strategies.',
+  longDescription: 'Designed for parents of children aged 1-3 years, this program helps you navigate the challenges of toddler behavior with effective, positive discipline techniques. Learn to understand your child\'s development, set appropriate boundaries, and build a strong parent-child connection.',
+  imageUrl: 'https://picsum.photos/seed/program2/600/400', targetAudience: 'Parents of toddlers (1-3 years)',
+  tags: ['toddler behavior', 'positive discipline', 'emotional development', 'limit setting'],
+  paymentType: 'paid',
+  price: 29.99,
+  currency: 'USD',
+  paymentLink: 'https://example.com/payment/toddler-discipline',
   weeks: [
     { id: 'p2w1', weekNumber: 1, title: 'The Toddler Brain & Big Emotions', summary: 'Understand the "why" behind toddler behavior.',
       learningElements: [
@@ -728,28 +750,37 @@ export const initialMockDiscussionsData = [
   { id: 'd4', programId: 'program3-preschool-power-school-readiness', program: 'Mindful Parenting for Preschoolers', topic: 'Mindful listening success story!', user: 'Pat K.', date: '2024-07-17', snippet: 'Tried the mindful listening exercise and it really helped connect with my preschooler!', status: 'resolved' },
 ];
 
-
-if (typeof window !== 'undefined') {
-  if (!localStorage.getItem(LOCAL_STORAGE_KEY_PROGRAMS)) {
+// Initialize localStorage with mock data
+// This ensures the data is available on initial load
+if (typeof window !== 'undefined') { // Check if we're in browser environment
+  const storedPrograms = localStorage.getItem(LOCAL_STORAGE_KEY_PROGRAMS);
+  if (!storedPrograms) {
     localStorage.setItem(LOCAL_STORAGE_KEY_PROGRAMS, JSON.stringify(mockPrograms));
+    console.log('Initialized localStorage with mock programs');
   }
-  if (!localStorage.getItem(LOCAL_STORAGE_KEY_USERS)) {
-     const usersWithDatesAndEmail = mockUsers.map(u => ({
-        ...u, 
-        email: u.email || `${u.name.toLowerCase().replace(/\s/g, '.')}@example.com`, 
-        registrationDate: u.registrationDate || generateRandomDate(),
-        moodLog: u.moodLog || [], 
-    }));
-    localStorage.setItem(LOCAL_STORAGE_KEY_USERS, JSON.stringify(usersWithDatesAndEmail));
+  
+  const storedUsers = localStorage.getItem(LOCAL_STORAGE_KEY_USERS);
+  if (!storedUsers) {
+    localStorage.setItem(LOCAL_STORAGE_KEY_USERS, JSON.stringify(mockUsers));
+    console.log('Initialized localStorage with mock users');
   }
-  if (!localStorage.getItem(BANNERS_STORAGE_KEY)) { 
-    localStorage.setItem(BANNERS_STORAGE_KEY, JSON.stringify(mockBanners));
-  }
-  if(!localStorage.getItem(DISCUSSIONS_STORAGE_KEY)){
-    localStorage.setItem(DISCUSSIONS_STORAGE_KEY, JSON.stringify(initialMockDiscussionsData));
-  }
-  if (!localStorage.getItem(VOUCHERS_STORAGE_KEY)) {
+  
+  const storedVouchers = localStorage.getItem(VOUCHERS_STORAGE_KEY);
+  if (!storedVouchers) {
     localStorage.setItem(VOUCHERS_STORAGE_KEY, JSON.stringify(initialMockVouchers));
+    console.log('Initialized localStorage with mock vouchers');
+  }
+  
+  const storedBanners = localStorage.getItem(BANNERS_STORAGE_KEY);
+  if (!storedBanners) {
+    localStorage.setItem(BANNERS_STORAGE_KEY, JSON.stringify(mockBanners));
+    console.log('Initialized localStorage with mock banners');
+  }
+  
+  const storedDiscussions = localStorage.getItem(DISCUSSIONS_STORAGE_KEY);
+  if (!storedDiscussions) {
+    localStorage.setItem(DISCUSSIONS_STORAGE_KEY, JSON.stringify(initialMockDiscussionsData));
+    console.log('Initialized localStorage with mock discussions');
   }
 }
     
