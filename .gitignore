@@ -42,3 +42,13 @@ next-env.d.ts
 
 # IDX
 .idx
+
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+ui-debug.log
+
+# Large build files
+**/*.pack
+**/*.node
