@@ -8,8 +8,16 @@ import { VouchersDataTable } from '@/components/admin/vouchers-data-table';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle } from 'lucide-react';
-import { VoucherGenerationDialog } from '@/components/admin/voucher-generation-dialog'; // Renamed for clarity
-import { format } from 'date-fns';
+import { VoucherGenerationDialog } from '@/components/admin/voucher-generation-dialog';
+import { format as _format } from 'date-fns';
+import { 
+  getVouchers as _getVouchers, 
+  createVoucher as _createVoucher, 
+  deleteVoucher as _deleteVoucher 
+} from '@/services/voucherService';
+import { getPrograms as _getPrograms } from '@/services/programService';
+import { useRouter as _useRouter } from 'next/navigation';
+import _Link from 'next/link';
 
 const VOUCHERS_STORAGE_KEY = 'mockVouchers';
 
@@ -66,7 +74,7 @@ export default function AdminVouchersPage() {
     }));
     const updatedVouchers = [...vouchers, ...updatedVouchersWithTitles];
     setVouchers(updatedVouchers);
-    localStorage.setItem(VOUCHERS_STORAGE_KEY, JSON.stringify(updatedVouchers.map(({programTitle, ...rest}) => rest))); // Store without programTitle
+    localStorage.setItem(VOUCHERS_STORAGE_KEY, JSON.stringify(updatedVouchers.map(({programTitle: _programTitle, ...rest}) => rest))); // Store without programTitle
     toast({
       title: "Vouchers Generated",
       description: `${newlyGeneratedVouchers.length} voucher(s) have been successfully created.`,

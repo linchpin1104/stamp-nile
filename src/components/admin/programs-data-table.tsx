@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import {
   ColumnDef,
   flexRender,
@@ -26,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import type { Program } from "@/types";
-import { ArrowUpDown, Edit, Trash2, Eye, MoreHorizontal, Settings2 } from "lucide-react";
+import { ArrowUpDown, Trash2, Eye, MoreHorizontal, Settings2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,7 +42,8 @@ interface ProgramsDataTableProps {
 }
 
 export const getColumns = (
-  onDeleteProgram?: (programId: string) => void
+  onDeleteProgram?: (programId: string) => void,
+  router?: ReturnType<typeof useRouter>
 ): ColumnDef<Program>[] => [
   {
     accessorKey: "title",
@@ -99,7 +99,8 @@ export const getColumns = (
     id: "actions",
     cell: ({ row }) => {
       const program = row.original;
-      const router = useRouter();
+      
+      if (!router) return null;
 
       return (
         <DropdownMenu>
@@ -138,8 +139,9 @@ export const getColumns = (
 export function ProgramsDataTable({ data, onDeleteProgram }: ProgramsDataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const router = useRouter();
   
-  const columns = React.useMemo(() => getColumns(onDeleteProgram), [onDeleteProgram]);
+  const columns = React.useMemo(() => getColumns(onDeleteProgram, router), [onDeleteProgram, router]);
 
   const table = useReactTable({
     data,

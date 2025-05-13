@@ -23,13 +23,16 @@ export function useProgramViewer(program: Program): UseProgramViewerResult {
   }, [isMobile]);
   
   useEffect(() => {
-    if (isMobileView && !optimizedProgram.mobileOptimized) {
+    // Use a function to determine if we need to optimize the program
+    const needsOptimization = isMobileView && !program.mobileOptimized;
+    
+    if (needsOptimization) {
       const enhanced = enhanceProgramForMobile(program);
       setOptimizedProgram(enhanced);
     } else {
       setOptimizedProgram(program);
     }
-  }, [program, isMobileView, optimizedProgram.mobileOptimized]);
+  }, [program, isMobileView]);
   
   const toggleView = () => setUseDesktopView(prev => !prev);
   

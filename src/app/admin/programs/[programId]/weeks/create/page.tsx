@@ -1,16 +1,15 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { WeekForm, WeekFormData } from '@/components/admin/week-form';
-import type { Program, Week, LearningElement, LearningElementType, VideoContent, Checklist, ActionItemContent, TextContent, VideoChoiceGroup, PsychologicalTestContent, QuestionAnswerSessionContent, MissionReminderContent, OXQuizContent, ChecklistItem, TodoListActionItemContent } from '@/types';
+import type { Program, Week, LearningElement, LearningElementType, VideoContent, Checklist, TextContent, VideoChoiceGroup, PsychologicalTestContent, QuestionAnswerSessionContent, MissionReminderContent, OXQuizContent, ChecklistItem, TodoListActionItemContent } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { getProgramById, updateProgram } from '@/services/programService'; 
+import { getProgramById, updateProgram } from '@/services/programService';
 
 const generateId = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
@@ -55,7 +54,7 @@ const createPlaceholderLearningElement = (type: LearningElementType): LearningEl
 };
 
 export default function CreateWeekPage() {
-  const router = useRouter();
+  const _router = useRouter();
   const { programId: routeProgramId } = useParams();
   const { toast } = useToast();
 
@@ -80,7 +79,7 @@ export default function CreateWeekPage() {
           setProgram(fetchedProgram);
         } else {
           toast({ title: "Error", description: "Program not found to add week to.", variant: "destructive" });
-          router.push('/admin/programs');
+          _router.push('/admin/programs');
         }
         setIsLoading(false);
       };
@@ -88,7 +87,7 @@ export default function CreateWeekPage() {
     } else if (routeProgramId === null) { // If param resolved to null
         setIsLoading(false); // Stop loading, error will be shown
     }
-  }, [programId, router, toast, routeProgramId]);
+  }, [programId, _router, toast, routeProgramId]);
 
   const handleAddWeek = async (data: WeekFormData) => {
     if (!program || !program.id) {
@@ -114,7 +113,7 @@ export default function CreateWeekPage() {
     
     if (success) {
       toast({ title: "Week Added", description: `Week ${newWeek.weekNumber}: "${newWeek.title}" added to ${program.title}. Placeholder content elements created.` });
-      router.push(`/admin/programs/${program.id}/edit`); 
+      _router.push(`/admin/programs/${program.id}/edit`); 
     } else {
        toast({ title: "Error", description: "Failed to add week to the program.", variant: "destructive" });
     }

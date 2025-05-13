@@ -1,5 +1,4 @@
-
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription as _CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { BookCopy, Users, BarChart3, Settings, Activity } from 'lucide-react'; // Added Activity

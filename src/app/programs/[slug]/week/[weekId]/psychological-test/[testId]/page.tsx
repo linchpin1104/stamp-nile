@@ -1,24 +1,30 @@
-
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Brain, CheckCircle } from 'lucide-react';
-import type { Program, Week, PsychologicalTestContent, UserPsychTestResponseItem, User as UserType } from '@/types';
+import type { 
+  Program, 
+  Week, 
+  PsychologicalTestContent, 
+  PsychologicalFactor as _PsychologicalFactor, 
+  User as UserType, 
+  UserPsychTestResponseItem as UserPsychologicalTestResponseItem 
+} from '@/types';
 import { getProgramBySlug } from '@/services/programService';
 import { useToast } from '@/hooks/use-toast';
 import { mockUser as fallbackMockUser } from '@/lib/mock-data';
 
-interface UserResponse extends UserPsychTestResponseItem {}
+// Replace empty interface with type alias that extends the base type
+type UserResponse = UserPsychologicalTestResponseItem;
 
 export default function PsychologicalTestPage() {
   const { slug: routeSlug, weekId: routeWeekId, testId: routeTestId } = useParams();
-  const router = useRouter();
   const { toast } = useToast();
 
   const [programSlug, setProgramSlugState] = useState<string | null>(null);
@@ -264,9 +270,11 @@ export default function PsychologicalTestPage() {
             )}
           </CardContent>
           <CardFooter>
-             <Button onClick={() => router.push(programSlug && weekId ? `/programs/${programSlug}/week/${weekId}` : (programSlug ? `/programs/${programSlug}` : "/programs"))} className="w-full">
+            <Button asChild className="w-full">
+              <Link href={programSlug && weekId ? `/programs/${programSlug}/week/${weekId}` : (programSlug ? `/programs/${programSlug}` : "/programs")}>
                 <CheckCircle className="mr-2 h-4 w-4" /> Done
-             </Button>
+              </Link>
+            </Button>
           </CardFooter>
         </Card>
       </div>

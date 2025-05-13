@@ -1,9 +1,9 @@
 // 환경 변수 로드
-require('./load-env');
+import './load-env.mjs';
 
 import { db } from '@/lib/firebase';
 import { mockPrograms, mockUsers, initialMockVouchers, mockBanners, initialMockDiscussionsData } from '@/lib/mock-data';
-import { collection, doc, setDoc, writeBatch } from 'firebase/firestore';
+import { collection, doc, writeBatch } from 'firebase/firestore';
 
 /**
  * Firestore에 샘플 데이터를 업로드하는 함수

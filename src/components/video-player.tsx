@@ -10,14 +10,12 @@ interface VideoPlayerProps {
   videoContent: VideoContent;
   className?: string;
   showTitle?: boolean;
-  autoplay?: boolean;
 }
 
 export function VideoPlayer({ 
   videoContent, 
   className, 
-  showTitle = true,
-  autoplay = false 
+  showTitle = true
 }: VideoPlayerProps) {
   const isMobile = useIsMobile();
   

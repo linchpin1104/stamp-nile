@@ -1,7 +1,7 @@
 // 환경 변수를 로드하는 스크립트
-const fs = require('fs');
-const path = require('path');
-const dotenv = require('dotenv');
+import fs from 'fs';
+import path from 'path';
+import dotenv from 'dotenv';
 
 // .env 파일 로드
 function loadEnv() {

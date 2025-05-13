@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, type FormEvent, useEffect } from 'react';
@@ -50,7 +49,7 @@ export default function RegisterPage() {
   const handleRegister = (event: FormEvent) => {
     event.preventDefault();
     setError('');
-    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
+    if (!email.trim() || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
         setError('Please enter a valid email address.');
         return;
     }
@@ -151,7 +150,7 @@ export default function RegisterPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                 <Label htmlFor="parentalRole">Your Role</Label>
-                <Select onValueChange={(value) => setParentalRole(value as any)} value={parentalRole}>
+                <Select onValueChange={(value) => setParentalRole(value as 'mother' | 'father' | 'grandparent')} value={parentalRole}>
                     <SelectTrigger className="py-3 text-base">
                         <Smile className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <span className="pl-6"><SelectValue placeholder="Select your role" /></span>

@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { optimizeTextForMobile } from '@/lib/mobile-optimization';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp } from 'lucide-react';

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -6,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Form,
@@ -18,7 +16,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { Program, CompanyDocument } from '@/types';
+import type { Program } from '@/types';
 import { useEffect } from 'react';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -60,8 +58,32 @@ const programSchema = z.object({
   longDescription: z.string().optional(),
   imageUrl: z.string().url({ message: "Please enter a valid URL for the image." }).optional().or(z.literal('')),
   targetAudience: z.string().min(3, { message: "Target audience is required." }),
+  paymentType: z.enum(['free', 'paid']),
+  price: z.string().optional(),
+  currency: z.string().optional(),
+  paymentLink: z.string().url({ message: "Please enter a valid URL for the payment link." }).optional().or(z.literal('')),
   tagsString: z.string().optional(),
   companySpecificDocuments: z.array(companyDocumentSchema).optional(),
+}).refine((data) => {
+  if (data.paymentType === 'paid') {
+    // Check for price
+    const price = parseFloat(data.price || '0');
+    if (isNaN(price) || price <= 0) {
+      return false;
+    }
+    // Check for currency
+    if (!data.currency) {
+      return false;
+    }
+    // Check for payment link
+    if (!data.paymentLink) {
+      return false;
+    }
+  }
+  return true;
+}, {
+  message: "Paid programs require price, currency, and payment link.",
+  path: ["paymentType"],
 });
 
 type ProgramFormData = z.infer<typeof programSchema>;
@@ -79,6 +101,10 @@ export function ProgramForm({ initialData, onSubmit }: ProgramFormProps) {
           ...initialData,
           tagsString: initialData.tags?.join(', ') || '',
           companySpecificDocuments: initialData.companySpecificDocuments || [],
+          price: initialData.price ? initialData.price.toString() : undefined,
+          paymentType: initialData.paymentType || 'free',
+          currency: initialData.currency || '',
+          paymentLink: initialData.paymentLink || '',
         }
       : {
           title: '',
@@ -88,6 +114,10 @@ export function ProgramForm({ initialData, onSubmit }: ProgramFormProps) {
           imageUrl: '',
           targetAudience: '',
           tagsString: '',
+          paymentType: 'free',
+          price: '',
+          currency: '',
+          paymentLink: '',
           companySpecificDocuments: [],
         },
   });
@@ -204,6 +234,96 @@ export function ProgramForm({ initialData, onSubmit }: ProgramFormProps) {
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="paymentType"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Payment Type</FormLabel>
+              <Select 
+                onValueChange={field.onChange} 
+                defaultValue={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select payment type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="free">Free</SelectItem>
+                  <SelectItem value="paid">Paid</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                Whether this program is free or requires payment
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {form.watch("paymentType") === "paid" && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <FormField
+              control={form.control}
+              name="price"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Price</FormLabel>
+                  <FormControl>
+                    <Input type="number" min="0.01" step="0.01" placeholder="e.g., 19.99" {...field} />
+                  </FormControl>
+                  <FormDescription>Price for the program</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="currency"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Currency</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select currency" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="USD">USD (US Dollar)</SelectItem>
+                      <SelectItem value="EUR">EUR (Euro)</SelectItem>
+                      <SelectItem value="GBP">GBP (British Pound)</SelectItem>
+                      <SelectItem value="KRW">KRW (Korean Won)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>Currency for the price</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="paymentLink"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Payment Link</FormLabel>
+                  <FormControl>
+                    <Input type="url" placeholder="https://example.com/payment" {...field} />
+                  </FormControl>
+                  <FormDescription>External payment link</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
 
         <FormField
           control={form.control}
@@ -328,7 +448,7 @@ export function ProgramForm({ initialData, onSubmit }: ProgramFormProps) {
             >
               <PlusCircle className="h-4 w-4 mr-2" /> Add Company Document
             </Button>
-            <FormMessage>{(form.formState.errors as any)?.companySpecificDocuments?.message}</FormMessage>
+            <FormMessage>{(form.formState.errors as Record<string, { message?: string }>)?.companySpecificDocuments?.message}</FormMessage>
           </CardContent>
         </Card>
 

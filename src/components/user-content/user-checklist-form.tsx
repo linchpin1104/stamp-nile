@@ -1,10 +1,9 @@
-
 "use client";
 
-import type { Checklist as ChecklistType, ChecklistItem as ChecklistItemType } from '@/types';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import type { ChecklistType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -75,7 +74,6 @@ export function UserChecklistForm({ initialData, onSubmit, onCancel, programId, 
     onSubmit(fullChecklistData);
   };
 
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 p-1 max-h-[70vh] overflow-y-auto">
@@ -119,7 +117,10 @@ export function UserChecklistForm({ initialData, onSubmit, onCancel, programId, 
           <Button type="button" variant="outline" size="sm" onClick={() => append({ id: generateId('userItem'), text: '' })}>
             <PlusCircle className="h-4 w-4 mr-2" /> Add Item
           </Button>
-          <FormMessage>{(form.formState.errors as any)?.items?.message || (form.formState.errors.items as any)?.root?.message}</FormMessage>
+          <FormMessage>
+            {(form.formState.errors as { items?: { message?: string, root?: { message?: string } } })?.items?.message || 
+             (form.formState.errors.items as { root?: { message?: string } })?.root?.message}
+          </FormMessage>
         </div>
 
         <div className="flex justify-end space-x-3 pt-4 sticky bottom-0 bg-popover py-3 border-t -mx-1 px-1">

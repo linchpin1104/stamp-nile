@@ -1,24 +1,23 @@
-
 "use client";
 
 import { useState, useEffect, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserCircle, Baby, Edit3, Save, Users, MapPin, Smile, Phone, CalendarDays, PlusCircle, Trash2, ListTodo, Target, Award, BookOpenCheck, Ticket, AlertCircle, Mail, HeartPulse } from 'lucide-react'; // Added Mail, HeartPulse
+import { UserCircle, Baby, Edit3, Save, Users, MapPin, Smile, Phone, CalendarDays, PlusCircle, Trash2, ListTodo, Target, Award, BookOpenCheck, Ticket, AlertCircle, Mail, HeartPulse } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { mockUser as fallbackMockUser, mockPrograms as initialMockPrograms, initialMockVouchers } from '@/lib/mock-data';
-import type { User as UserType, ChildInfo, TodoListActionItemContent, UserMission, Program, Voucher, MoodEntry } from '@/types';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose, DialogFooter } from '@/components/ui/dialog';
+import type { User as UserType, TodoListActionItemContent, UserMission, Program, Voucher, MoodEntry } from '@/types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { UserTodoListForm, UserTodoListFormData } from '@/components/user-content/user-todo-list-form';
 import { ActionItemCardView } from '@/components/action-item-card-view';
-import { MoodLogDisplay } from '@/components/mood/mood-log-display'; // Import MoodLogDisplay
+import { MoodLogDisplay } from '@/components/mood/mood-log-display';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -30,9 +29,12 @@ const generateId = (prefix = "item") => `${prefix}-${Date.now()}-${Math.random()
 const MAX_USER_MISSIONS = 3;
 const VOUCHERS_STORAGE_KEY = 'mockVouchers';
 
+// parentalRole 타입 정의
+type ParentalRoleType = 'mother' | 'father' | 'grandparent' | '';
+
 
 export default function ProfilePage() {
-  const router = useRouter();
+  const _router = useRouter();
   const { toast } = useToast();
   const [user, setUser] = useState<UserType | null>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -42,7 +44,7 @@ export default function ProfilePage() {
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [residentialArea, setResidentialArea] = useState('');
-  const [parentalRole, setParentalRole] = useState<'mother' | 'father' | 'grandparent' | ''>('');
+  const [parentalRole, setParentalRole] = useState<ParentalRoleType>('');
   const [childrenInfo, setChildrenInfo] = useState<Array<{id: string, birthYear: string}>>([]);
 
   const [allProgramsData, setAllProgramsData] = useState<Program[]>([]);
@@ -66,7 +68,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
     if (!isAuthenticated) {
-      router.push('/auth/login');
+      _router.push('/auth/login');
       return;
     }
 
@@ -88,40 +90,31 @@ export default function ProfilePage() {
     if (storedUserProfileString) {
         currentUser = JSON.parse(storedUserProfileString);
     } else {
-        const storedUserName = localStorage.getItem('userName') || fallbackMockUser.name;
-        const storedUserEmail = localStorage.getItem('userEmail') || fallbackMockUser.email; 
-        const storedUserPhoneNumber = localStorage.getItem('userPhoneNumber');
-
+        const storedUserName = localStorage.getItem('userName');
         currentUser = {
             ...fallbackMockUser,
-            name: storedUserName,
-            email: storedUserEmail, 
-            phoneNumber: storedUserPhoneNumber || fallbackMockUser.phoneNumber, 
-            children: Array.isArray(fallbackMockUser.children) ? fallbackMockUser.children : [],
-            userMissions: fallbackMockUser.userMissions || [],
-            completedProgramIds: fallbackMockUser.completedProgramIds || [],
-            registeredVouchers: fallbackMockUser.registeredVouchers || [],
-            moodLog: fallbackMockUser.moodLog || [], // Initialize moodLog
+            name: storedUserName || fallbackMockUser.name,
         };
-    }
-     // Ensure moodLog exists
-    if (!currentUser.moodLog) {
-        currentUser.moodLog = [];
+        localStorage.setItem('userProfile', JSON.stringify(currentUser));
     }
 
     setUser(currentUser);
-    setName(currentUser.name);
-    setEmail(currentUser.email); 
-    setPhoneNumber(currentUser.phoneNumber || ''); 
-    setResidentialArea(currentUser.residentialArea);
-    setParentalRole(currentUser.parentalRole);
-    setChildrenInfo(currentUser.children.map(c => ({ id: c.id, birthYear: c.birthYear.toString() })) || []);
-    setCustomTodoLists(currentUser.customTodoLists || []);
-    setUserMissions(currentUser.userMissions || []);
-    setCompletedProgramIds(currentUser.completedProgramIds || []);
-    setUserMoodLog(currentUser.moodLog || []); // Set mood log state
+    
+    // Calculate program completion stats
+    const enrolledPrograms = currentUser.enrolledPrograms || [];
+    
+    if (enrolledPrograms.length > 0) {
+      const _completedCount = enrolledPrograms.filter((p: {status: string}) => p.status === 'completed').length;
+      const _inProgressCount = enrolledPrograms.filter((p: {status: string}) => p.status === 'in_progress').length;
+      
+      setCompletedProgramIds(enrolledPrograms.map((p: {id: string}) => p.id));
+    }
 
-  }, [router]);
+    // Load mood log data
+    setUserMoodLog(currentUser.moodLog || []);
+    
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [_router]); // Dependencies are limited to router to prevent re-runs with mutable mock data
 
   const handleChildBirthYearChange = (index: number, year: string) => {
     const updatedBirthYears = [...childrenInfo];
@@ -149,8 +142,8 @@ export default function ProfilePage() {
     localStorage.setItem('userProfile', JSON.stringify(updatedUser));
   };
 
-  const handleProfileSave = (e: FormEvent) => {
-    e.preventDefault();
+  const handleProfileSave = (_e: FormEvent) => {
+    _e.preventDefault();
     if(user) {
         const updatedUser: UserType = {
             ...user,
@@ -307,7 +300,8 @@ export default function ProfilePage() {
     if (storedVouchersString) {
       try {
         allVouchers = JSON.parse(storedVouchersString);
-      } catch (e) {
+      } catch (_e) {
+        console.error("Failed to parse vouchers:", _e);
         setVoucherError("Error reading voucher data. Please try again later.");
         return;
       }
@@ -439,7 +433,7 @@ export default function ProfilePage() {
                     </div>
                     <div>
                         <Label htmlFor="parentalRole">Your Role</Label>
-                        <Select onValueChange={(value) => setParentalRole(value as any)} value={parentalRole} >
+                        <Select onValueChange={(value) => setParentalRole(value as ParentalRoleType)} value={parentalRole} >
                             <SelectTrigger className="mt-1">
                                 <Smile className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                 <span className="pl-6"><SelectValue placeholder="Select your role" /></span>
@@ -612,7 +606,7 @@ export default function ProfilePage() {
                                     );
                                 })}
                                 {user.registeredVouchers.filter(rv => isAfter(parseISO(rv.accessExpiresDate), new Date())).length === 0 && (
-                                    <p className="text-sm text-muted-foreground">You have no currently active vouchers.</p>
+                                    <p className="text-sm text-muted-foreground">You don&apos;t have any active vouchers at the moment.</p>
                                 )}
                             </ul>
                         ) : (
@@ -638,13 +632,13 @@ export default function ProfilePage() {
                             customTodoLists.map(todoList => (
                                 <ActionItemCardView
                                     key={todoList.id}
-                                    actionItem={todoList as any}
+                                    actionItem={todoList}
                                     onEdit={() => openEditCustomTodoModal(todoList)}
                                     onDelete={() => handleDeleteCustomTodo(todoList.id)}
                                 />
                             ))
                         ) : (
-                            <p className="text-muted-foreground text-center py-4">You haven't created any custom to-do lists yet.</p>
+                            <p className="text-muted-foreground mb-3">You haven&apos;t created any to-do lists yet.</p>
                         )}
                     </CardContent>
                 </Card>

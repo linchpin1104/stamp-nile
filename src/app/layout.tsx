@@ -1,13 +1,12 @@
-import type { Metadata } from 'next';
-import { GeistSans } from 'geist/font/sans';
-// import { GeistMono } from 'geist/font/mono'; // Not used directly in this file currently
+import { pretendard } from '@/styles/fonts';
 import './globals.css';
 import { Providers } from '@/components/providers';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { cn } from '@/lib/utils';
+import { LanguageAttributeHandler } from '@/components/language-attribute-handler';
 
-export const metadata: Metadata = {
+export const metadata = {
   title: 'STAMP',
   description: 'Guidance and support for your parenting journey.',
 };
@@ -19,11 +18,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <LanguageAttributeHandler />
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased",
-          GeistSans.variable,
-          // GeistMono.variable // Only include if GeistMono is actually used
+          pretendard.variable
         )}
       >
         <Providers>

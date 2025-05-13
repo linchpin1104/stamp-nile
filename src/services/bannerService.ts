@@ -58,7 +58,7 @@ export const createBanner = async (bannerData: Omit<Banner, 'id'>): Promise<Bann
 };
 
 export const updateBanner = async (bannerId: string, bannerData: Partial<Omit<Banner, 'id'>>): Promise<Banner | null> => {
-  let banners = await getBanners();
+  const banners = await getBanners();
   const bannerIndex = banners.findIndex(b => b.id === bannerId);
   if (bannerIndex === -1) {
     return null;
@@ -69,7 +69,7 @@ export const updateBanner = async (bannerId: string, bannerData: Partial<Omit<Ba
 };
 
 export const deleteBanner = async (bannerId: string): Promise<boolean> => {
-  let banners = await getBanners();
+  const banners = await getBanners();
   const updatedBanners = banners.filter(b => b.id !== bannerId);
   if (banners.length === updatedBanners.length) {
     return false; // Banner not found

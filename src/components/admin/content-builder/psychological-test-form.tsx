@@ -1,19 +1,17 @@
-
 "use client";
 
-import type { PsychologicalTestContent, PsychologicalFactor, PsychologicalTestQuestion, ResultComment } from '@/types';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import type { PsychologicalTestContent } from '@/types';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
-import { PlusCircle, Trash2, GripVertical } from 'lucide-react';
+import { PlusCircle, Trash2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
 
 const generateId = (prefix = "item") => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -236,8 +234,8 @@ export function PsychologicalTestForm({ initialData, onSubmit, onCancel }: Psych
                         render={({ field }) => <Input type="number" placeholder="Val" {...field} className="w-20"/>} />
                     </div>
                   ))}
-                  <FormMessage>{(form.formState.errors.factors?.[factorIndex]?.questions?.[qIndex]?.options as any)?.message}</FormMessage>
-                  <Button type="button" variant="ghost" size="xs" onClick={() => removeQuestionFromFactor(factorIndex, qIndex)} className="absolute top-1 right-1 text-destructive hover:bg-destructive/10">
+                  <FormMessage>{form.formState.errors.factors?.[factorIndex]?.questions?.[qIndex]?.options?.message}</FormMessage>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => removeQuestionFromFactor(factorIndex, qIndex)} className="absolute top-1 right-1 text-destructive hover:bg-destructive/10">
                     <Trash2 className="h-3 w-3"/>
                   </Button>
                 </Card>
@@ -247,7 +245,7 @@ export function PsychologicalTestForm({ initialData, onSubmit, onCancel }: Psych
                   <PlusCircle className="h-4 w-4 mr-2" /> Add Question to Factor
                 </Button>
               }
-              <FormMessage>{(form.formState.errors.factors?.[factorIndex]?.questions as any)?.message}</FormMessage>
+              <FormMessage>{form.formState.errors.factors?.[factorIndex]?.questions?.message}</FormMessage>
               
               <Separator className="my-3"/>
               <h4 className="text-md font-medium">Result Comments for Factor {factorIndex + 1}</h4>
@@ -259,12 +257,12 @@ export function PsychologicalTestForm({ initialData, onSubmit, onCancel }: Psych
                       <FormField control={form.control} name={`factors.${factorIndex}.factorResultComments.${commentIndex}.scoreRange.1`}
                         render={({ field }) => <FormItem><FormLabel>Max Score</FormLabel><Input type="number" {...field}/><FormMessage/></FormItem>} />
                     </div>
-                    <FormMessage>{(form.formState.errors.factors?.[factorIndex]?.factorResultComments?.[commentIndex]?.scoreRange as any)?.message}</FormMessage>
+                    <FormMessage>{form.formState.errors.factors?.[factorIndex]?.factorResultComments?.[commentIndex]?.scoreRange?.message}</FormMessage>
                     <FormField control={form.control} name={`factors.${factorIndex}.factorResultComments.${commentIndex}.categoryLabel`}
                         render={({ field }) => <FormItem><FormLabel>Category Label</FormLabel><Input placeholder="e.g., 매우높음" {...field}/><FormMessage/></FormItem>} />
                     <FormField control={form.control} name={`factors.${factorIndex}.factorResultComments.${commentIndex}.comment`}
                         render={({ field }) => <FormItem><FormLabel>Comment</FormLabel><Textarea placeholder="Comment for this score range" {...field} rows={2}/><FormMessage/></FormItem>} />
-                    <Button type="button" variant="ghost" size="xs" onClick={() => removeResultCommentFromFactor(factorIndex, commentIndex)} className="absolute top-1 right-1 text-destructive hover:bg-destructive/10">
+                    <Button type="button" variant="ghost" size="sm" onClick={() => removeResultCommentFromFactor(factorIndex, commentIndex)} className="absolute top-1 right-1 text-destructive hover:bg-destructive/10">
                       <Trash2 className="h-3 w-3"/>
                     </Button>
                  </Card>
@@ -272,14 +270,14 @@ export function PsychologicalTestForm({ initialData, onSubmit, onCancel }: Psych
               <Button type="button" variant="outline" size="sm" onClick={() => addResultCommentToFactor(factorIndex)}>
                 <PlusCircle className="h-4 w-4 mr-2" /> Add Result Comment for Factor
               </Button>
-              <FormMessage>{(form.formState.errors.factors?.[factorIndex]?.factorResultComments as any)?.message}</FormMessage>
+              <FormMessage>{form.formState.errors.factors?.[factorIndex]?.factorResultComments?.message}</FormMessage>
             </CardContent>
           </Card>
         ))}
         <Button type="button" variant="outline" onClick={() => appendFactor({ id: generateId('factor'), title: '', scoringMethod: 'sum', questions: [{id: generateId('q'), text: '', options: defaultQuestionOptions()}], factorResultComments: [{id: generateId('resComment'), scoreRange: [0,0] as [number,number], categoryLabel: '', comment: ''}] })}>
           <PlusCircle className="h-4 w-4 mr-2" /> Add Factor
         </Button>
-        <FormMessage>{(form.formState.errors.factors as any)?.message || (form.formState.errors.factors as any)?.root?.message}</FormMessage>
+        <FormMessage>{form.formState.errors.factors?.message || form.formState.errors.factors?.root?.message}</FormMessage>
 
 
         <Separator />
@@ -292,12 +290,12 @@ export function PsychologicalTestForm({ initialData, onSubmit, onCancel }: Psych
                 <FormField control={form.control} name={`overallResultComments.${index}.scoreRange.1`}
                     render={({ field }) => <FormItem><FormLabel>Max Total Score</FormLabel><Input type="number" {...field}/><FormMessage/></FormItem>} />
                 </div>
-                <FormMessage>{(form.formState.errors.overallResultComments?.[index]?.scoreRange as any)?.message}</FormMessage>
+                <FormMessage>{form.formState.errors.overallResultComments?.[index]?.scoreRange?.message}</FormMessage>
                 <FormField control={form.control} name={`overallResultComments.${index}.categoryLabel`}
                     render={({ field }) => <FormItem><FormLabel>Overall Category Label</FormLabel><Input placeholder="e.g., 매우 균형적" {...field}/><FormMessage/></FormItem>} />
                 <FormField control={form.control} name={`overallResultComments.${index}.comment`}
                     render={({ field }) => <FormItem><FormLabel>Overall Comment</FormLabel><Textarea placeholder="Overall comment for this total score range" {...field} rows={2}/><FormMessage/></FormItem>} />
-                <Button type="button" variant="ghost" size="xs" onClick={() => removeOverallComment(index)} className="absolute top-1 right-1 text-destructive hover:bg-destructive/10">
+                <Button type="button" variant="ghost" size="sm" onClick={() => removeOverallComment(index)} className="absolute top-1 right-1 text-destructive hover:bg-destructive/10">
                     <Trash2 className="h-3 w-3"/>
                 </Button>
             </Card>
@@ -305,7 +303,7 @@ export function PsychologicalTestForm({ initialData, onSubmit, onCancel }: Psych
         <Button type="button" variant="outline" onClick={() => appendOverallComment({ id: generateId('overallC'), scoreRange: [0,0] as [number, number], categoryLabel: '', comment: '' })}>
           <PlusCircle className="h-4 w-4 mr-2" /> Add Overall Result Comment
         </Button>
-        <FormMessage>{(form.formState.errors.overallResultComments as any)?.message || (form.formState.errors.overallResultComments as any)?.root?.message}</FormMessage>
+        <FormMessage>{form.formState.errors.overallResultComments?.message || form.formState.errors.overallResultComments?.root?.message}</FormMessage>
 
         <div className="flex justify-end space-x-3 pt-4 sticky bottom-0 bg-popover py-3 border-t -mx-1 px-1">
           <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>

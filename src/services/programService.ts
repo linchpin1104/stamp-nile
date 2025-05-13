@@ -8,7 +8,6 @@ const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // Create typed caches for different program data types
-const programCache = createTypedCache<Program>('program');
 const programListCache = createTypedCache<Program[]>('programList');
 const paginationCache = createTypedCache<{
   programs: Program[];

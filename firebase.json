@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "parenting-pathways",
     "public": ".next/standalone",
     "ignore": [
       "firebase.json",

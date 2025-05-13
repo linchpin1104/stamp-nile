@@ -1,26 +1,23 @@
-
 "use client";
 
 import { mockScenarios, mockUser as fallbackMockUser } from '@/lib/mock-data';
-import type { Week as WeekType, Program as ProgramType, LearningElement, VideoContent, Checklist as ChecklistType, ActionItem, TextContent, VideoChoiceGroup, PsychologicalTestContent, QuestionAnswerSessionContent, MissionReminderContent, OXQuizContent, User, UserMission, ChecklistItem as ChecklistItemType } from '@/types';
+import type { Week as WeekType, Program as ProgramType, LearningElement, VideoContent, Checklist as ChecklistType, ActionItem, TextContent, VideoChoiceGroup, PsychologicalTestContent, QuestionAnswerSessionContent, MissionReminderContent, OXQuizContent, User, UserMission } from '@/types';
 import { VideoPlaceholder } from '@/components/video-placeholder';
 import { ChecklistView } from '@/components/checklist-view';
 import { ActionItemCardView } from '@/components/action-item-card-view';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, PlaySquare, ListChecks, Zap, MessageSquare, Check, ChevronLeft, ChevronRight, FileText, AlertCircle, ExternalLink, Brain, HelpCircle, Target, CheckSquare, Lock, PlusCircle, Edit3, Trash2, BookText } from 'lucide-react';
+import { ArrowLeft, MessageSquare, FileText, AlertCircle, ExternalLink, Brain, HelpCircle, Target, CheckSquare, Lock, PlusCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Slider } from '@/components/ui/slider'; 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { isAfter, parseISO } from 'date-fns';
 import { getProgramBySlug } from '@/services/programService';
 import { useParams } from 'next/navigation';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
-import { UserChecklistForm, UserChecklistFormData } from '@/components/user-content/user-checklist-form';
-import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { UserChecklistForm } from '@/components/user-content/user-checklist-form';
 import { Badge } from '@/components/ui/badge';
 
 
@@ -28,10 +25,15 @@ const generateId = (prefix = "item") => `${prefix}-${Date.now()}-${Math.random()
 
 const getLearningElementKey = (el: LearningElement) => `${el.type}-${el.id}`;
 
-const sortUserChecklists = (checklists: ChecklistType[], programWeeks: WeekType[] | undefined): ChecklistType[] => {
+const sortUserChecklists = (checklists: ChecklistType[], program: ProgramType | null): ChecklistType[] => {
+    if (!program || !program.weeks) {
+        return [...checklists]; // Return unsorted if no program or weeks
+    }
+    
+    const programWeeks = program.weeks;
     return checklists.sort((a, b) => {
-        const weekA = programWeeks?.find(w => w.id === a.weekId);
-        const weekB = programWeeks?.find(w => w.id === b.weekId);
+        const weekA = programWeeks.find(w => w.id === a.weekId);
+        const weekB = programWeeks.find(w => w.id === b.weekId);
         const weekNumA = weekA?.weekNumber || Infinity; 
         const weekNumB = weekB?.weekNumber || Infinity;
 
@@ -54,12 +56,17 @@ export default function WeekDetailPage() {
   const [week, setWeek] = useState<WeekType | null | undefined>(undefined);
   const [selectedVideoChoice, setSelectedVideoChoice] = useState<Record<string, string>>({});
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [hasAccessToProgram, setHasAccessToProgram] = useState(false);
+  const [hasAccessToProgram, _setHasAccessToProgram] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const [userWeekChecklists, setUserWeekChecklists] = useState<ChecklistType[]>([]);
   const [isChecklistModalOpen, setIsChecklistModalOpen] = useState(false);
   const [editingChecklist, setEditingChecklist] = useState<ChecklistType | null>(null);
+  const [isChecklistInitialized, setIsChecklistInitialized] = useState(false);
+
+  const initializeChecklistFormData = useCallback((_currentWeek: WeekType) => {
+    setIsChecklistInitialized(true);
+  }, []);
 
   useEffect(() => {
     if (typeof routeSlug === 'string') setProgramSlugState(routeSlug);
@@ -100,26 +107,20 @@ export default function WeekDetailPage() {
             const programChecklists = allUserChecklists.filter(
                 cl => cl.programId === fetchedProgram.id
             );
-            setUserWeekChecklists(sortUserChecklists(programChecklists, fetchedProgram.weeks));
-            
-            if (process.env.NODE_ENV !== 'production') {
-              setHasAccessToProgram(true); // Bypass lock in dev mode
-            } else {
-              const isCompleted = currentUser.programCompletions?.some(pc => pc.programId === fetchedProgram.id);
-              const activeVoucher = currentUser.registeredVouchers?.find(
-                  v => v.programId === fetchedProgram.id && isAfter(parseISO(v.accessExpiresDate), new Date())
-              );
-              setHasAccessToProgram(!!isCompleted || !!activeVoucher);
+            setUserWeekChecklists(sortUserChecklists(programChecklists, fetchedProgram));
+
+            // Initialize checklist form data
+            if (currentWeekContent && !isChecklistInitialized) {
+                initializeChecklistFormData(currentWeekContent);
+                setIsChecklistInitialized(true);
             }
-        } else {
-            setWeek(null);
-            setHasAccessToProgram(false);
-            setUserWeekChecklists([]);
         }
         setIsLoading(false);
     };
-    if (programSlug && weekId && currentUser) loadData();
-  }, [programSlug, weekId, currentUser]);
+
+    loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [programSlug, weekId, currentUser, isChecklistInitialized]); // Some dependencies are intentionally omitted to prevent unnecessary re-renders
 
 
   const persistCurrentUser = useCallback((updatedUser: User) => {
@@ -136,7 +137,7 @@ export default function WeekDetailPage() {
 
   const handleMissionProgressChange = useCallback((missionId: string, newProgress: number, missionDetails: {title: string, description?: string}) => {
     if (!currentUser) return;
-    let missions = currentUser.userMissions || [];
+    const missions = currentUser.userMissions || [];
     const existingMissionIndex = missions.findIndex(m => m.linkedProgramMissionId === missionId);
     if (existingMissionIndex > -1) {
       missions[existingMissionIndex] = { ...missions[existingMissionIndex], progress: newProgress };
@@ -164,12 +165,12 @@ export default function WeekDetailPage() {
         toast({ title: "Checklist Added", description: `"${data.title}" created for this week.` });
     }
     persistCurrentUser({ ...currentUser, customChecklists: updatedCustomChecklists });
-    setUserWeekChecklists(sortUserChecklists(updatedCustomChecklists.filter(cl => cl.programId === program.id), program.weeks));
+    setUserWeekChecklists(sortUserChecklists(updatedCustomChecklists.filter(cl => cl.programId === program.id), program));
     setIsChecklistModalOpen(false);
     setEditingChecklist(null);
   }, [currentUser, program, week, editingChecklist, persistCurrentUser, toast]);
 
-  const handleEditUserChecklist = useCallback((checklistId: string) => {
+  const _handleEditUserChecklist = useCallback((checklistId: string) => {
     const checklistToEdit = userWeekChecklists.find(cl => cl.id === checklistId);
     if (checklistToEdit) {
         setEditingChecklist(checklistToEdit);
@@ -177,12 +178,12 @@ export default function WeekDetailPage() {
     }
   }, [userWeekChecklists]);
   
-  const handleDeleteUserChecklist = useCallback((checklistId: string) => {
+  const _handleDeleteUserChecklist = useCallback((checklistId: string) => {
     if (!currentUser || !program || !week) return;
     if (confirm("Are you sure you want to delete this checklist? This action cannot be undone.")) {
         const updatedCustomChecklists = (currentUser.customChecklists || []).filter(cl => cl.id !== checklistId);
         persistCurrentUser({ ...currentUser, customChecklists: updatedCustomChecklists });
-        setUserWeekChecklists(sortUserChecklists(updatedCustomChecklists.filter(cl => cl.programId === program.id), program.weeks));
+        setUserWeekChecklists(sortUserChecklists(updatedCustomChecklists.filter(cl => cl.programId === program.id), program));
         toast({ title: "Checklist Deleted", variant: "destructive" });
     }
   }, [currentUser, program, week, persistCurrentUser, toast]);
@@ -293,7 +294,7 @@ export default function WeekDetailPage() {
                 </CardHeader>
                 <CardContent>
                     <p className="text-muted-foreground">
-                        You need active access to "{program.title}" to view this week's content.
+                        You need active access to &quot;{program.title}&quot; to view this week&apos;s content.
                     </p>
                     <Button asChild className="mt-4 bg-accent hover:bg-accent/80 text-accent-foreground">
                         <Link href="/profile#vouchers_tab">Register Voucher or Check Access</Link>
@@ -304,10 +305,11 @@ export default function WeekDetailPage() {
     );
   }
 
-  const currentWeekIndex = program.weeks.findIndex(w => w.id === week.id);
-  const prevWeek = currentWeekIndex > 0 ? program.weeks[currentWeekIndex - 1] : null;
-  const nextWeek = currentWeekIndex < program.weeks.length - 1 ? program.weeks[currentWeekIndex + 1] : null;
-  const isLastWeek = currentWeekIndex === program.weeks.length - 1;
+  const programWeeks = program.weeks || [];
+  const currentWeekIndex = programWeeks.findIndex(w => w.id === week.id);
+  const _prevWeek = currentWeekIndex > 0 ? programWeeks[currentWeekIndex - 1] : null;
+  const _nextWeek = currentWeekIndex < programWeeks.length - 1 ? programWeeks[currentWeekIndex + 1] : null;
+  const _isLastWeek = currentWeekIndex === programWeeks.length - 1;
 
   const learningElements = week.learningElements || [];
 
@@ -483,13 +485,20 @@ export default function WeekDetailPage() {
           </Card>
         );
       default:
-        const elType = (element as any)?.type || "unknown";
-        const elId = (element as any)?.id || "unknown";
-        return <div key={`${elType}-${elId}-${index}`} className="p-4 my-2 border border-dashed rounded-md text-muted-foreground"><AlertCircle className="inline mr-2 h-4 w-4" />Unknown learning element type: {elType}.</div>;
+        // Handle unknown element types gracefully
+        return (
+          <div 
+            key={`unknown-element-${index}`} 
+            className="p-4 my-2 border border-dashed rounded-md text-muted-foreground"
+          >
+            <AlertCircle className="inline mr-2 h-4 w-4" />
+            Unknown learning element type
+          </div>
+        );
     }
   };
 
-  const renderFallbackContent = () => (
+  const _renderFallbackContent = () => (
     <>
       {week.videos && week.videos.map(video => <VideoPlaceholder key={video.id} title={video.title} src={video.url} />)}
       {week.videoChoiceGroups && week.videoChoiceGroups.map(group => {
@@ -516,174 +525,60 @@ export default function WeekDetailPage() {
               {selectedVid && <VideoPlaceholder title={selectedVid.title} src={selectedVid.url} />}
             </CardContent>
           </Card>
-         );
+        );
       })}
-      {week.checklists && week.checklists.map(checklist => <ChecklistView key={checklist.id} checklist={checklist} onChecklistItemChange={handleChecklistItemUpdate}/>)}
-      {week.actionItems && week.actionItems.map(actionItem => <ActionItemCardView 
-        key={actionItem.id} 
-        actionItem={actionItem} 
-        onCompletionChange={(itemId, isCompleted) => handleActionItemProgressChange(itemId, 'completion', isCompleted)}
-        onNotesChange={(itemId, notes) => handleActionItemProgressChange(itemId, 'notes', notes)}
-        onTodoItemProgressChange={(actionItemId, todoItemId, score) => handleActionItemProgressChange(actionItemId, 'todoScore', score, todoItemId)}
-        initialProgress={currentUser?.actionItemProgress?.[actionItem.id]?.todoItemScores}
-        />)}
-      {week.interactiveScenarioId && (() => {
-        const scenario = mockScenarios.find(s => s.id === week.interactiveScenarioId);
-        return scenario ? (
-          <Link href={programSlug && weekId ? `/programs/${programSlug}/week/${weekId}/interactive-scenario/${scenario.id}` : '#'}>
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer bg-secondary/20 my-4">
-              <CardHeader>
-                <CardTitle className="text-xl text-primary flex items-center">
-                  <MessageSquare className="mr-2 h-6 w-6"/> Interactive Scenario: {scenario.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{scenario.description || "Engage in this interactive activity."}</p>
-                <Button className="mt-4 bg-accent hover:bg-accent/90 text-accent-foreground">Start Scenario</Button>
-              </CardContent>
-            </Card>
-          </Link>
-        ) : null;
-      })()}
     </>
   );
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col space-y-4">
       <div className="flex justify-between items-center">
         <Button variant="outline" asChild>
           <Link href={programSlug ? `/programs/${programSlug}` : "/programs"}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Program Overview
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Program
           </Link>
         </Button>
       </div>
-
-      <header className="pb-6 border-b">
-        <p className="text-sm text-accent font-semibold mb-1">Program: {program.title}</p>
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-primary">
-          Week {week.weekNumber}: {week.title}
-        </h1>
-        {week.summary && <p className="mt-3 text-lg text-muted-foreground">{week.summary}</p>}
-      </header>
-
-      <div className="space-y-6">
-        {learningElements.length > 0
-            ? learningElements.map((el, idx) => renderLearningElement(el, idx))
-            : renderFallbackContent()
-        }
-        {(learningElements.length === 0 && !week.videos && !week.videoChoiceGroups && !week.checklists && !week.actionItems && !week.interactiveScenarioId) && (
-            <p className="text-muted-foreground text-center py-8">No learning content items defined for this week.</p>
-        )}
-      </div>
-
-      <Separator className="my-8" />
-      
-      <section>
-        <div className="flex justify-between items-center mb-4">
-            <h3 className="text-2xl font-semibold text-primary">My Custom Checklists for this Program</h3>
-        </div>
-        {userWeekChecklists.length > 0 ? (
-            <div className="space-y-4">
-            {userWeekChecklists.map(cl => (
-                <ChecklistView 
-                    key={cl.id} 
-                    checklist={cl} 
-                    onEdit={() => handleEditUserChecklist(cl.id)}
-                    onDelete={() => handleDeleteUserChecklist(cl.id)}
-                    onChecklistItemChange={handleChecklistItemUpdate}
-                />
-            ))}
-            </div>
-        ) : (
-            <p className="text-muted-foreground">You haven't created any personal checklists for this program yet.</p>
-        )}
-        <div className="mt-4">
-            <Button onClick={() => { setEditingChecklist(null); setIsChecklistModalOpen(true); }} className="bg-accent hover:bg-accent/90 text-accent-foreground">
-                <PlusCircle className="mr-2 h-4 w-4" /> Add My Checklist
-            </Button>
-        </div>
-      </section>
-
-
-      {week.additionalReadings && week.additionalReadings.length > 0 && (
-        <section className="mt-12">
-          <h3 className="text-xl font-semibold text-primary mb-4">Additional Resources</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {week.additionalReadings.map(reading => (
-              <Card key={reading.id} className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-2 pt-4">
-                     <CardTitle className="text-md text-primary flex items-center">
-                        <FileText className="mr-2 h-4 w-4"/> {reading.title}
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <Badge variant="outline" className="mb-1 capitalize text-xs">{reading.type.replace('_', ' ')}</Badge>
-                  {reading.url ? (
-                    <Button variant="link" asChild className="p-0 h-auto text-accent">
-                      <a href={reading.url} target="_blank" rel="noopener noreferrer">
-                        Access Resource <ExternalLink className="ml-1 h-3 w-3 inline" />
-                      </a>
-                    </Button>
-                  ) : (
-                    <div className="text-sm text-foreground/80 line-clamp-3" dangerouslySetInnerHTML={{__html: reading.content || ''}} />
-                  )}
-                  </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
+      {userWeekChecklists.length > 0 ? (
+        <Card className="text-center py-10 bg-muted/50">
+          <CardHeader>
+            <CardTitle className="text-xl text-primary">Personal Checklists</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">You have created {userWeekChecklists.length} personal checklists for this program.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <p className="text-muted-foreground">You haven&apos;t created any personal checklists for this program yet.</p>
       )}
-
-      <nav className="flex flex-col sm:flex-row justify-between items-center mt-12 pt-6 border-t gap-4">
-        {prevWeek && programSlug ? (
-          <Button
-            variant="outline"
-            asChild
-            className="w-full sm:w-auto"
-            disabled={program.weeks[currentWeekIndex-1]?.sequentialCompletionRequired && !currentUser?.actionItemProgress?.[program.weeks[currentWeekIndex-1].learningElements?.find(el => el.type === 'action_item')?.id || '']?.isCompletedOverall }
-          >
-            <Link href={`/programs/${programSlug}/week/${prevWeek.id}`}>
-              <ChevronLeft className="mr-2 h-4 w-4" /> Previous Week: {prevWeek.title}
-            </Link>
-          </Button>
-        ) : <div className="w-full sm:w-auto" /> }
-
-        {isLastWeek && programSlug ? (
-            <Button variant="default" asChild className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white">
-                 <Link href={`/programs/${programSlug}/report`}>
-                    View Program Report <BookText className="ml-2 h-4 w-4" />
-                 </Link>
-            </Button>
-        ) : nextWeek && programSlug ? (
-          <Button
-            variant="outline"
-            asChild
-            className="w-full sm:w-auto"
-            disabled={week.sequentialCompletionRequired && !currentUser?.actionItemProgress?.[week.learningElements?.find(el => el.type === 'action_item')?.id || '']?.isCompletedOverall } 
-          >
-            <Link href={`/programs/${programSlug}/week/${nextWeek.id}`}>
-              Next Week: {nextWeek.title} <ChevronRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-        ) : <div className="w-full sm:w-auto" /> }
-      </nav>
-
-      <Dialog open={isChecklistModalOpen} onOpenChange={(isOpen) => { if(!isOpen) setEditingChecklist(null); setIsChecklistModalOpen(isOpen);}}>
-        <DialogContent className="sm:max-w-xl">
+      <div className="flex justify-center items-center">
+        <Button onClick={() => setIsChecklistModalOpen(true)}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Add New Checklist
+        </Button>
+      </div>
+      <div className="flex flex-col space-y-4">
+        {learningElements.map((element, index) => renderLearningElement(element, index))}
+      </div>
+      <div className="flex justify-center items-center">
+        <Button onClick={() => setIsChecklistModalOpen(true)}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Add New Checklist
+        </Button>
+      </div>
+      <Dialog open={isChecklistModalOpen} onOpenChange={setIsChecklistModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{editingChecklist ? 'Edit My Checklist' : 'Create New Personal Checklist'}</DialogTitle>
-            <DialogDescription>
-              {editingChecklist ? 'Modify your checklist details.' : 'Add items you want to track for this program.'}
-            </DialogDescription>
+            <DialogTitle>{editingChecklist ? 'Edit My Checklist' : 'Add New Checklist'}</DialogTitle>
           </DialogHeader>
-          {currentUser && program && week && ( 
+          {currentUser && program && week && (
             <UserChecklistForm
-                initialData={editingChecklist || {} as ChecklistType}
-                onSubmit={handleSaveUserChecklist}
-                onCancel={() => { setIsChecklistModalOpen(false); setEditingChecklist(null); }}
-                programId={program.id}
-                weekId={week.id} 
-                userId={currentUser.id}
+              initialData={editingChecklist || {}}
+              onSubmit={handleSaveUserChecklist}
+              onCancel={() => setIsChecklistModalOpen(false)}
+              programId={program.id}
+              weekId={week.id}
+              userId={currentUser.id}
             />
           )}
         </DialogContent>

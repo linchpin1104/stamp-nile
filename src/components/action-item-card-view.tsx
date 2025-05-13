@@ -1,13 +1,13 @@
 "use client";
 
-import type { ActionItem, ActionItemContent, TodoListItem } from '@/types'; 
+import type { ActionItem, TodoListItem } from '@/types'; 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle, Edit3, BookOpen, MessageSquare, ListTodo, Trash2, Star } from 'lucide-react';
+import { CheckCircle, Edit3, BookOpen, MessageSquare, ListTodo, Trash2 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider'; 
 import { cn } from '@/lib/utils';
 
@@ -21,7 +21,7 @@ interface ActionItemCardProps {
   initialProgress?: Record<string, number>; 
 }
 
-const typeIcons: Record<ActionItem['type'], React.ElementType> = {
+const typeIcons: Record<string, React.ElementType> = {
   todo_list: ListTodo, 
   journal_prompt: Edit3, 
   dialogue_activity: MessageSquare, 
@@ -69,12 +69,14 @@ export function ActionItemCardView({
         };
       });
 
-      if (JSON.stringify(newCalculatedItems) !== JSON.stringify(localTodoItems)) {
+      const currentItemsJson = JSON.stringify(localTodoItems);
+      const newItemsJson = JSON.stringify(newCalculatedItems);
+
+      if (currentItemsJson !== newItemsJson) {
         setLocalTodoItems(newCalculatedItems);
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [actionItem.todoItems, actionItem.type, initialProgress]);
+  }, [actionItem.todoItems, actionItem.type, initialProgress, localTodoItems]);
 
 
   useEffect(() => {

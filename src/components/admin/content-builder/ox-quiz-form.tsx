@@ -1,7 +1,6 @@
-
 "use client";
 
-import type { OXQuizContent, OXQuizQuestion } from '@/types';
+import type { OXQuizContent } from '@/types';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -95,9 +94,9 @@ export function OXQuizForm({ initialData, onSubmit, onCancel }: OXQuizFormProps)
               render={({ field: qField }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-background">
                   <div className="space-y-0.5">
-                    <FormLabel>Correct Answer is "O" (True/Yes)</FormLabel>
+                    <FormLabel>Correct Answer is &quot;O&quot; (True/Yes)</FormLabel>
                     <FormDescription>
-                      Switch on if "O" (True/Yes) is correct. Off if "X" (False/No) is correct.
+                      Switch on if &quot;O&quot; (True/Yes) is correct. Off if &quot;X&quot; (False/No) is correct.
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -128,7 +127,7 @@ export function OXQuizForm({ initialData, onSubmit, onCancel }: OXQuizFormProps)
         <Button type="button" variant="outline" onClick={() => append({ id: generateId('oxq'), statement: '', correctAnswer: true, explanation: '' })}>
           <PlusCircle className="h-4 w-4 mr-2" /> Add Question
         </Button>
-        <FormMessage>{(form.formState.errors as any)?.questions?.message}</FormMessage>
+        <FormMessage>{form.formState.errors.questions?.message}</FormMessage>
 
         <div className="flex justify-end space-x-3 pt-4 sticky bottom-0 bg-popover py-3 border-t">
           <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>

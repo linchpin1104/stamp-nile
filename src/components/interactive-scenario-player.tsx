@@ -1,7 +1,6 @@
-
 "use client";
 
-import type { InteractiveScenario, ScenarioNode, ScenarioOption } from '@/types';
+import type { InteractiveScenario, ScenarioOption } from '@/types';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +12,7 @@ import Image from 'next/image';
 
 interface InteractiveScenarioPlayerProps {
   scenario: InteractiveScenario;
-  onScenarioComplete?: (scenarioId: string, userResponses: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  onScenarioComplete?: (scenarioId: string, userResponses: Record<string, string | string[]>) => void;
 }
 
 interface ChatMessage {
@@ -54,8 +53,7 @@ export function InteractiveScenarioPlayer({ scenario, onScenarioComplete }: Inte
         ]);
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentNodeId]); // Rerun when currentNodeId changes to fetch new node content
+  }, [currentNodeId, currentNode, history]); // Rerun when currentNodeId changes to fetch new node content
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -113,9 +111,16 @@ export function InteractiveScenarioPlayer({ scenario, onScenarioComplete }: Inte
     if (currentNode.type === 'message') {
       if (currentNode.nextNodeId) {
         setCurrentNodeId(currentNode.nextNodeId);
-      } else if (currentNode.type === 'summary' && onScenarioComplete) { // Check if it's actually a summary node
+      } else if (onScenarioComplete) { 
+        // If there's no next node, treat as end of scenario
         onScenarioComplete(scenario.id, currentResponses);
       }
+      return;
+    }
+
+    // For 'summary' type nodes
+    if (currentNode.type === 'summary' && onScenarioComplete) {
+      onScenarioComplete(scenario.id, currentResponses);
       return;
     }
 

@@ -1,26 +1,23 @@
-
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, CheckCircle, Award, BookOpenCheck, ListChecks, Target, MessageSquare, Star, ThumbsUp } from 'lucide-react';
+import { ArrowLeft, Award, BookOpenCheck, ListChecks, Star } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import type { Program as ProgramType, User as UserType, ProgramCompletion, Week, LearningElement } from '@/types';
+import type { Program as ProgramType, User as UserType, ProgramCompletion } from '@/types';
 import { getProgramBySlug } from '@/services/programService';
 import { mockUser as fallbackMockUser } from '@/lib/mock-data';
-import { format, parseISO, isAfter } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ProgramCompletionModal } from '@/components/program-completion-modal';
 import { useToast } from '@/hooks/use-toast';
 
 
 export default function ProgramReportPage() {
   const { slug: routeSlug } = useParams();
-  const router = useRouter();
   const { toast } = useToast();
   
   const [programSlug, setProgramSlugState] = useState<string | null>(null);
@@ -121,9 +118,9 @@ export default function ProgramReportPage() {
     ? format(parseISO(programCompletion.completionDate), 'MMMM d, yyyy') 
     : 'Not officially marked complete yet';
 
-  const totalLearningElements = program.weeks.reduce((sum, week) => sum + (week.learningElements?.length || 0), 0);
+  const totalLearningElements = program.weeks?.reduce((sum, week) => sum + (week.learningElements?.length || 0), 0) || 0;
   const completedChecklists = currentUser.customChecklists?.filter(cl => cl.programId === program.id && cl.items.every(item => item.isChecked)).length || 0;
-  const totalMissions = currentUser.userMissions?.filter(m => m.linkedProgramMissionId && program.weeks.some(w => w.learningElements?.some(le => le.type === 'mission_reminder' && le.id === m.linkedProgramMissionId))).length || 0;
+  const totalMissions = currentUser.userMissions?.filter(m => m.linkedProgramMissionId && program.weeks?.some(w => w.learningElements?.some(le => le.type === 'mission_reminder' && le.id === m.linkedProgramMissionId))).length || 0;
 
 
   return (
@@ -165,7 +162,7 @@ export default function ProgramReportPage() {
           <section className="space-y-3">
             <h3 className="text-xl font-semibold text-primary flex items-center"><BookOpenCheck className="mr-2 h-5 w-5"/>Program Overview</h3>
             <p><span className="font-medium">Target Audience:</span> {program.targetAudience}</p>
-            <p><span className="font-medium">Total Weeks:</span> {program.weeks.length}</p>
+            <p><span className="font-medium">Total Weeks:</span> {program.weeks?.length || 0}</p>
             <p><span className="font-medium">Total Learning Elements:</span> {totalLearningElements}</p>
           </section>
 

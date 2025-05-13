@@ -1,4 +1,3 @@
-
 "use client";
 
 import { InteractiveScenarioPlayer } from '@/components/interactive-scenario-player';
@@ -11,11 +10,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
-interface InteractiveScenarioPageProps {
-  // Params are now obtained via useParams hook
-}
-
-export default function InteractiveScenarioPage({}: InteractiveScenarioPageProps) {
+export default function InteractiveScenarioPage() {
   const { scenarioId: routeScenarioId, slug: routeSlug, weekId: routeWeekId } = useParams();
   const router = useRouter();
   const { toast } = useToast();
@@ -71,7 +66,7 @@ export default function InteractiveScenarioPage({}: InteractiveScenarioPageProps
         const currentProgram = mockPrograms.find(p => p.slug === programSlug); // Or await getProgramBySlug(programSlug)
         setProgramState(currentProgram || null);
 
-        if (currentProgram) {
+        if (currentProgram && currentProgram.weeks) {
           const currentWeekData = currentProgram.weeks.find(w => w.id === weekId);
           setWeekState(currentWeekData || null);
         } else {

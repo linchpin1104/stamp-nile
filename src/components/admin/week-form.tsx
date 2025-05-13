@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from 'react-hook-form';
@@ -9,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import {
   Form,
   FormControl,
@@ -19,7 +17,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import type { Week, LearningElementType } from '@/types';
+import type { LearningElementType } from '@/types';
 import { Separator } from '../ui/separator';
 
 // Schema for the fields directly managed by this form

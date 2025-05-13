@@ -1,7 +1,6 @@
-
 "use client";
 
-import type { ActionItemContent, TodoListActionItemContent, JournalPromptActionItemContent, DialogueActivityActionItemContent, ConversationalResponseActionItemContent } from '@/types';
+import type { ActionItemContent } from '@/types';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -63,6 +62,10 @@ const actionItemContentSchema = z.discriminatedUnion("type", [
 
 export type ActionItemFormData = z.infer<typeof actionItemContentSchema>;
 
+// Helper type for field arrays
+type TodoListFieldArray = z.infer<typeof todoListActionItemSchema>["todoItems"];
+type DialogueChoiceFieldArray = z.infer<typeof dialogueActivityActionItemSchema>["dialogueChoices"];
+
 interface ActionItemFormProps {
   initialData: ActionItemContent;
   onSubmit: (data: ActionItemFormData) => void;
@@ -79,12 +82,12 @@ export function ActionItemForm({ initialData, onSubmit, onCancel }: ActionItemFo
 
   const { fields: todoFields, append: appendTodo, remove: removeTodo } = useFieldArray({
     control: form.control,
-    name: "todoItems" as any, // Type assertion needed due to discriminated union
+    name: "todoItems" as keyof ActionItemFormData, // Type cast needed due to discriminated union
   });
 
   const { fields: choiceFields, append: appendChoice, remove: removeChoice } = useFieldArray({
     control: form.control,
-    name: "dialogueChoices" as any, // Type assertion
+    name: "dialogueChoices" as keyof ActionItemFormData, // Type cast needed
   });
 
   return (
@@ -119,25 +122,25 @@ export function ActionItemForm({ initialData, onSubmit, onCancel }: ActionItemFo
             <FormItem>
               <FormLabel>Action Item Type</FormLabel>
               <Select 
-                onValueChange={(value) => {
+                onValueChange={(value: string) => {
                     field.onChange(value);
                     // Reset specific fields when type changes
-                    if (value === 'todo_list' && !form.getValues('todoItems' as any)?.length) {
-                        form.setValue('todoItems' as any, [{ id: generateId('todo'), text: '' }]);
+                    if (value === 'todo_list' && !form.getValues('todoItems' as keyof ActionItemFormData)?.length) {
+                        form.setValue('todoItems' as keyof ActionItemFormData, [{ id: generateId('todo'), text: '' }] as unknown as undefined);
                     } else if (value !== 'todo_list') {
-                        form.setValue('todoItems' as any, undefined);
+                        form.setValue('todoItems' as keyof ActionItemFormData, undefined as unknown as undefined);
                     }
-                    if (value === 'dialogue_activity' && !form.getValues('dialogueChoices' as any)?.length) {
-                        form.setValue('dialoguePrompt' as any, form.getValues('description') || '');
-                        form.setValue('dialogueChoices'as any, [{ id: generateId('choice'), text: '', feedback: '' }]);
+                    if (value === 'dialogue_activity' && !form.getValues('dialogueChoices' as keyof ActionItemFormData)?.length) {
+                        form.setValue('dialoguePrompt' as keyof ActionItemFormData, form.getValues('description') || '' as unknown as undefined);
+                        form.setValue('dialogueChoices' as keyof ActionItemFormData, [{ id: generateId('choice'), text: '', feedback: '' }] as unknown as undefined);
                     } else if (value !== 'dialogue_activity') {
-                        form.setValue('dialogueChoices'as any, undefined);
+                        form.setValue('dialogueChoices' as keyof ActionItemFormData, undefined as unknown as undefined);
                         if (value !== 'conversational_response_practice') {
-                             form.setValue('dialoguePrompt' as any, undefined);
+                             form.setValue('dialoguePrompt' as keyof ActionItemFormData, undefined as unknown as undefined);
                         }
                     }
-                    if (value === 'conversational_response_practice' && !form.getValues('dialoguePrompt' as any)) {
-                         form.setValue('dialoguePrompt' as any, form.getValues('description') || '');
+                    if (value === 'conversational_response_practice' && !form.getValues('dialoguePrompt' as keyof ActionItemFormData)) {
+                         form.setValue('dialoguePrompt' as keyof ActionItemFormData, form.getValues('description') || '' as unknown as undefined);
                     }
 
                 }} 
@@ -160,11 +163,11 @@ export function ActionItemForm({ initialData, onSubmit, onCancel }: ActionItemFo
         {itemType === 'todo_list' && (
           <div className="space-y-3 p-3 border rounded-md bg-muted/30">
             <FormLabel>To-Do Items</FormLabel>
-            {(todoFields as any[]).map((field, index) => (
+            {(todoFields as TodoListFieldArray).map((field, index) => (
               <div key={field.id} className="flex items-center space-x-2">
                 <FormField
                   control={form.control}
-                  name={`todoItems.${index}.text` as any}
+                  name={`todoItems.${index}.text` as const}
                   render={({ field: todoField }) => (
                     <Input placeholder={`To-do item ${index + 1}`} {...todoField} className="flex-grow"/>
                   )}
@@ -175,14 +178,14 @@ export function ActionItemForm({ initialData, onSubmit, onCancel }: ActionItemFo
             <Button type="button" variant="outline" size="sm" onClick={() => appendTodo({ id: generateId('todo'), text: '' })}>
               <PlusCircle className="h-4 w-4 mr-2" /> Add To-Do Item
             </Button>
-            <FormMessage>{(form.formState.errors as any)?.todoItems?.message}</FormMessage>
+            <FormMessage>{form.formState.errors.todoItems?.message}</FormMessage>
           </div>
         )}
 
         {(itemType === 'dialogue_activity' || itemType === 'conversational_response_practice') && (
           <FormField
             control={form.control}
-            name={"dialoguePrompt" as any}
+            name={"dialoguePrompt" as const}
             render={({ field }) => (
               <FormItem className="p-3 border rounded-md bg-muted/30">
                 <FormLabel>{itemType === 'dialogue_activity' ? 'Dialogue Activity Prompt' : 'Practice Scenario Prompt'}</FormLabel>
@@ -196,11 +199,11 @@ export function ActionItemForm({ initialData, onSubmit, onCancel }: ActionItemFo
         {itemType === 'dialogue_activity' && (
           <div className="space-y-3 p-3 border rounded-md bg-muted/30">
             <FormLabel>Dialogue Choices</FormLabel>
-            {(choiceFields as any[]).map((field, index) => (
+            {(choiceFields as DialogueChoiceFieldArray).map((field, index) => (
               <div key={field.id} className="space-y-2 p-2 border rounded bg-background">
                 <FormField
                   control={form.control}
-                  name={`dialogueChoices.${index}.text` as any}
+                  name={`dialogueChoices.${index}.text` as const}
                   render={({ field: choiceField }) => (
                     <FormItem>
                       <FormLabel>Choice {index + 1} Text</FormLabel>
@@ -211,7 +214,7 @@ export function ActionItemForm({ initialData, onSubmit, onCancel }: ActionItemFo
                 />
                 <FormField
                   control={form.control}
-                  name={`dialogueChoices.${index}.feedback` as any}
+                  name={`dialogueChoices.${index}.feedback` as const}
                   render={({ field: choiceField }) => (
                      <FormItem>
                         <FormLabel>Feedback for this choice (Optional)</FormLabel>
@@ -225,7 +228,7 @@ export function ActionItemForm({ initialData, onSubmit, onCancel }: ActionItemFo
             <Button type="button" variant="outline" size="sm" onClick={() => appendChoice({ id: generateId('choice'), text: '', feedback: '' })}>
               <PlusCircle className="h-4 w-4 mr-2" /> Add Choice
             </Button>
-            <FormMessage>{(form.formState.errors as any)?.dialogueChoices?.message}</FormMessage>
+            <FormMessage>{form.formState.errors.dialogueChoices?.message}</FormMessage>
           </div>
         )}
 

@@ -1,9 +1,7 @@
-
 "use client";
 
 import * as React from 'react';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Bold, Italic, Underline, List, ListOrdered, Link as LinkIcon } from 'lucide-react';
 

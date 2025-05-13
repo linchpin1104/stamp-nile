@@ -6,7 +6,6 @@ import {
   addDoc,
   getDoc,
   getDocs,
-  updateDoc,
   deleteDoc,
   query,
   where,
@@ -20,10 +19,14 @@ import {
   FirestoreError,
   writeBatch,
   serverTimestamp,
-  DocumentReference,
-  runTransaction,
-  WithFieldValue,
+  DocumentReference as _DocumentReference,
   getCountFromServer,
+  runTransaction,
+  CollectionReference as _CollectionReference,
+  WithFieldValue,
+  Firestore as _Firestore,
+  setDoc as _setDoc,
+  updateDoc as _updateDoc,
 } from 'firebase/firestore';
 import { mockPrograms as fallbackMockPrograms } from '@/lib/mock-data';
 import { 
@@ -118,7 +121,7 @@ const programConverter: FirestoreDataConverter<Program> = {
     }
     
     // Normalize and clean data
-    const data: any = { ...program };
+    const data: DocumentData = { ...program };
     
     // Add timestamps for tracking
     data.updatedAt = serverTimestamp();
@@ -128,7 +131,7 @@ const programConverter: FirestoreDataConverter<Program> = {
     
     // Deep-clone nested objects to prevent Firestore reference issues
     if (data.weeks && Array.isArray(data.weeks)) {
-      data.weeks = data.weeks.map((week: any) => ({ 
+      data.weeks = data.weeks.map((week: Record<string, unknown>) => ({ 
         ...week,
         // Normalize and validate week data
         weekNumber: typeof week.weekNumber === 'number' ? week.weekNumber : parseInt(String(week.weekNumber), 10),
@@ -136,7 +139,7 @@ const programConverter: FirestoreDataConverter<Program> = {
     }
     
     if (data.companySpecificDocuments && Array.isArray(data.companySpecificDocuments) && data.companySpecificDocuments.length > 0) {
-      data.companySpecificDocuments = data.companySpecificDocuments.map((doc: any) => ({ ...doc }));
+      data.companySpecificDocuments = data.companySpecificDocuments.map((doc: Record<string, unknown>) => ({ ...doc }));
     }
     
     return data;
@@ -151,12 +154,14 @@ const programConverter: FirestoreDataConverter<Program> = {
     const { createdAt, updatedAt, ...rest } = data;
     
     // Convert Firestore timestamps to ISO strings for easier use in the app
-    return {
+    const program = {
       id: snapshot.id,
       ...rest,
       createdAt: createdAt ? new Date(createdAt.seconds * 1000).toISOString() : undefined,
       updatedAt: updatedAt ? new Date(updatedAt.seconds * 1000).toISOString() : undefined,
-    } as unknown as Program; // Cast to Program type after ensuring all required properties exist
+    } as unknown as Program; // Cast to unknown first, then to Program
+    
+    return program;
   }
 };
 
@@ -257,7 +262,7 @@ export class FirestoreProgramRepository implements ProgramRepository {
       }
       
       // In production, propagate the error
-      handleFirestoreError(error, 'getting all programs', { collection: this.collectionName });
+      return handleFirestoreError(error, 'getting all programs', { collection: this.collectionName }) as never;
     }
   }
 
@@ -299,7 +304,7 @@ export class FirestoreProgramRepository implements ProgramRepository {
       }
       
       // In production, propagate the error
-      handleFirestoreError(error, 'getting program by ID', { id, collection: this.collectionName });
+      return handleFirestoreError(error, 'getting program by ID', { id, collection: this.collectionName }) as never;
     }
   }
 
@@ -349,7 +354,7 @@ export class FirestoreProgramRepository implements ProgramRepository {
       }
       
       // In production, propagate the error
-      handleFirestoreError(error, 'getting program by slug', { slug, collection: this.collectionName });
+      return handleFirestoreError(error, 'getting program by slug', { slug, collection: this.collectionName }) as never;
     }
   }
 
@@ -357,7 +362,7 @@ export class FirestoreProgramRepository implements ProgramRepository {
     try {
       return await rateLimitedOperation(async () => {
         // Use transaction to verify slug uniqueness
-        return await runTransaction(db, async (transaction) => {
+        return await runTransaction(db, async (_transaction) => {
           // Check if slug already exists
           const slugQuery = query(this.collection, where("slug", "==", programData.slug));
           const slugSnapshot = await getDocs(slugQuery);
@@ -383,10 +388,10 @@ export class FirestoreProgramRepository implements ProgramRepository {
       });
       
       // Always propagate this error as it's a write operation
-      handleFirestoreError(error, 'creating program', { 
+      return handleFirestoreError(error, 'creating program', { 
         programTitle: programData.title,
         collection: this.collectionName 
-      });
+      }) as never;
     }
   }
 
@@ -394,9 +399,9 @@ export class FirestoreProgramRepository implements ProgramRepository {
     try {
       return await rateLimitedOperation(async () => {
         // Use a transaction for consistent updates
-        return await runTransaction(db, async (transaction) => {
+        return await runTransaction(db, async (_transaction) => {
           const docRef = doc(this.collection, programId);
-          const docSnap = await transaction.get(docRef);
+          const docSnap = await _transaction.get(docRef);
           
           if (!docSnap.exists()) {
             throw new DocumentNotFoundError('Program', programId);
@@ -416,7 +421,7 @@ export class FirestoreProgramRepository implements ProgramRepository {
           }
           
           // Update the document
-          transaction.update(docRef, {
+          _transaction.update(docRef, {
             ...programData,
             updatedAt: serverTimestamp()
           });
@@ -435,10 +440,10 @@ export class FirestoreProgramRepository implements ProgramRepository {
       });
       
       // Always propagate this error as it's a write operation
-      handleFirestoreError(error, 'updating program', { 
+      return handleFirestoreError(error, 'updating program', { 
         id: programId,
         collection: this.collectionName 
-      });
+      }) as never;
     }
   }
 
@@ -461,10 +466,10 @@ export class FirestoreProgramRepository implements ProgramRepository {
       });
       
       // Always propagate this error as it's a write operation
-      handleFirestoreError(error, 'deleting program', { 
+      return handleFirestoreError(error, 'deleting program', { 
         id: programId,
         collection: this.collectionName 
-      });
+      }) as never;
     }
   }
 
@@ -552,17 +557,15 @@ export class FirestoreProgramRepository implements ProgramRepository {
         };
       }
       
-      handleFirestoreError(error, 'fetching paginated programs', { 
+      return handleFirestoreError(error, 'fetching paginated programs', { 
         pageSize, 
         lastId,
         collection: this.collectionName 
-      });
+      }) as never;
     }
   }
 
   async getFieldsOnly(fields: string[], maxResults: number = 20): Promise<Partial<Program>[]> {
-    // Implementation for getting only specific fields
-    // TODO: Implement this when needed
     try {
       const allPrograms = await this.getAll();
       return allPrograms.slice(0, maxResults).map(program => {
@@ -599,11 +602,11 @@ export class FirestoreProgramRepository implements ProgramRepository {
         });
       }
       
-      handleFirestoreError(error, 'fetching fields-only programs', { 
+      return handleFirestoreError(error, 'fetching fields-only programs', { 
         fields, 
         maxResults,
         collection: this.collectionName 
-      });
+      }) as never;
     }
   }
   
@@ -616,30 +619,31 @@ export class FirestoreProgramRepository implements ProgramRepository {
       
       return await rateLimitedOperation(async () => {
         const batch = writeBatch(db);
-        const result = new Map<number, string>();
+        const resultMap = new Map<number, string>();
         
         // Process each program
         for (let i = 0; i < programs.length; i++) {
           const program = programs[i];
-          let docRef: DocumentReference;
           
+          // Check if it's an update or create
           if ('id' in program && program.id) {
-            // Update existing program
-            docRef = doc(this.collection, program.id);
-            batch.update(docRef, {
-              ...program,
-              updatedAt: serverTimestamp()
-            });
-            result.set(i, program.id);
+            // It's an update
+            const programRef = doc(this.collection, program.id);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id, ...programDataWithoutId } = program;
+            
+            // Apply converter's validation logic
+            const data = programConverter.toFirestore(programDataWithoutId as WithFieldValue<Program>);
+            batch.update(programRef, data);
+            resultMap.set(i, program.id);
           } else {
-            // Create new program
-            docRef = doc(this.collection);
-            batch.set(docRef, {
-              ...program,
-              createdAt: serverTimestamp(),
-              updatedAt: serverTimestamp()
-            });
-            result.set(i, docRef.id);
+            // It's a creation
+            const newProgramRef = doc(this.collection);
+            
+            // Apply converter's validation logic
+            const data = programConverter.toFirestore(program as WithFieldValue<Program>);
+            batch.set(newProgramRef, data);
+            resultMap.set(i, newProgramRef.id);
           }
         }
         
@@ -649,7 +653,7 @@ export class FirestoreProgramRepository implements ProgramRepository {
         // Invalidate caches
         this.invalidateCache();
         
-        return result;
+        return resultMap;
       });
     } catch (error) {
       logError(error, { 
@@ -658,10 +662,10 @@ export class FirestoreProgramRepository implements ProgramRepository {
         collection: this.collectionName 
       });
       
-      handleFirestoreError(error, 'batch creating/updating programs', { 
+      return handleFirestoreError(error, 'batch creating/updating programs', { 
         count: programs.length,
         collection: this.collectionName 
-      });
+      }) as never;
     }
   }
   
@@ -690,10 +694,10 @@ export class FirestoreProgramRepository implements ProgramRepository {
           .map(p => p.id);
       }
       
-      handleFirestoreError(error, 'getting program IDs by tag', { 
+      return handleFirestoreError(error, 'getting program IDs by tag', { 
         tag,
         collection: this.collectionName 
-      });
+      }) as never;
     }
   }
   
@@ -714,9 +718,9 @@ export class FirestoreProgramRepository implements ProgramRepository {
         return fallbackPrograms.length;
       }
       
-      handleFirestoreError(error, 'counting programs', { 
+      return handleFirestoreError(error, 'counting programs', { 
         collection: this.collectionName 
-      });
+      }) as never;
     }
   }
 

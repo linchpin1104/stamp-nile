@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -6,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ProgramForm } from '@/components/admin/program-form';
 import { WeeksDataTable } from '@/components/admin/weeks-data-table';
-import type { Program, Week, CompanyDocument } from '@/types';
+import type { Program, Week as _Week, CompanyDocument } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -22,7 +21,7 @@ const generateSlug = (title: string): string => {
 };
 
 export default function EditProgramPage() {
-  const router = useRouter();
+  const _router = useRouter();
   const { programId: routeProgramId } = useParams();
   const { toast } = useToast();
 
@@ -48,13 +47,13 @@ export default function EditProgramPage() {
           setProgram(fetchedProgram);
         } else {
           toast({ title: "Error", description: "Program not found.", variant: "destructive" });
-          router.push('/admin/programs');
+          _router.push('/admin/programs');
         }
         setIsLoading(false);
       };
       fetchProgram();
     }
-  }, [programId, router, toast]);
+  }, [programId, _router, toast]);
 
   const handleUpdateProgram = async (data: Omit<Program, 'id' | 'weeks' | 'slug'> & { slug?: string, tagsString?: string, companySpecificDocuments?: CompanyDocument[] }) => {
     if (!program || !programId) return;

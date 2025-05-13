@@ -42,7 +42,7 @@ const DEFAULT_OPTIONS: CacheOptions = {
 
 // In-memory cache storage
 class MemoryCache {
-  private cache: Map<string, CacheItem<any>> = new Map();
+  private cache: Map<string, CacheItem<unknown>> = new Map();
   private totalSize: number = 0;
   private maxSize: number;
 
@@ -51,7 +51,7 @@ class MemoryCache {
   }
 
   get<T>(key: string): T | null {
-    const item = this.cache.get(key);
+    const item = this.cache.get(key) as CacheItem<T> | undefined;
     
     if (!item) return null;
     
@@ -85,7 +85,10 @@ class MemoryCache {
     
     // If entry already exists, update total size
     if (this.cache.has(key)) {
-      this.totalSize -= (this.cache.get(key)?.size || 0);
+      const existingItem = this.cache.get(key);
+      if (existingItem) {
+        this.totalSize -= existingItem.size;
+      }
     }
     
     // Check if we need to evict items
@@ -94,7 +97,7 @@ class MemoryCache {
     }
     
     // Add to cache
-    this.cache.set(key, cacheItem);
+    this.cache.set(key, cacheItem as CacheItem<unknown>);
     this.totalSize += dataSize;
   }
 
@@ -147,13 +150,13 @@ class MemoryCache {
     keysToRemove.forEach(key => this.delete(key));
   }
 
-  private approximateSize(data: any): number {
+  private approximateSize(data: unknown): number {
     if (data === null || data === undefined) return 8;
     
     try {
       const json = JSON.stringify(data);
       return json.length * 2; // Unicode characters can be up to 2 bytes
-    } catch (e) {
+    } catch {
       // Fallback if unstringifiable
       return 1024; // Arbitrary size for complex objects
     }
@@ -212,8 +215,8 @@ class LocalStorageCache {
         try {
           // Try again after eviction
           this.set(key, data, options);
-        } catch (e) {
-          console.warn(`Failed to write to localStorage cache after eviction: ${e}`);
+        } catch {
+          console.warn(`Failed to write to localStorage cache after eviction`);
         }
       } else {
         console.warn(`Error writing to localStorage cache for key ${key}:`, error);
@@ -254,7 +257,7 @@ class LocalStorageCache {
           if (item.tags && item.tags.includes(tag)) {
             keysToRemove.push(key);
           }
-        } catch (e) {
+        } catch {
           // Ignore parse errors
         }
       }
@@ -275,7 +278,7 @@ class LocalStorageCache {
         try {
           const item = JSON.parse(localStorage.getItem(key) || '{}') as CacheItem<unknown>;
           items.push([key, item]);
-        } catch (e) {
+        } catch {
           // Ignore parse errors
         }
       }
@@ -363,6 +366,10 @@ export function invalidateCacheByTag(tag: string): void {
   localStorageCache.clearByTag(tag);
 }
 
+// 타입 정의를 위한 제네릭 매개변수 타입
+type CacheFn<T, Args extends unknown[]> = (...args: Args) => Promise<T>;
+type KeyFn<Args extends unknown[]> = (...args: Args) => string;
+
 /**
  * Creates a cached version of an async function
  * @param fn The function to wrap with caching
@@ -370,11 +377,11 @@ export function invalidateCacheByTag(tag: string): void {
  * @param options Cache options
  * @returns Cached version of the function
  */
-export function createCachedFunction<T, Args extends any[]>(
-  fn: (...args: Args) => Promise<T>,
-  keyFn: (...args: Args) => string,
+export function createCachedFunction<T, Args extends unknown[]>(
+  fn: CacheFn<T, Args>,
+  keyFn: KeyFn<Args>,
   options: CacheOptions = {}
-): (...args: Args) => Promise<T> {
+): CacheFn<T, Args> {
   return async (...args: Args): Promise<T> => {
     const cacheKey = keyFn(...args);
     const cached = getCached<T>(cacheKey);

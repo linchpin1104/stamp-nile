@@ -11,10 +11,6 @@ import {
 import { 
   doc, 
   getDoc, 
-  collection, 
-  query, 
-  where, 
-  getDocs,
   Timestamp, 
   serverTimestamp,
   setDoc,
@@ -61,7 +57,7 @@ export const Permissions = {
     !!user && user.role === UserRole.ADMIN,
     
   // Generic access check for any permission
-  check: (user: AuthUser | null, permission: (user: AuthUser | null) => boolean, resourceId?: string) => {
+  check: (user: AuthUser | null, permission: (user: AuthUser | null) => boolean) => {
     if (!permission(user)) {
       throw new PermissionDeniedError(`You don't have permission to perform this action`);
     }
@@ -81,8 +77,9 @@ export async function signIn(email: string, password: string): Promise<AuthUser>
     const auth = getAuth();
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return await getUserWithRole(userCredential.user);
-  } catch (error: any) {
-    throw new AuthError(`Authentication failed: ${error.message}`, 'AUTH_SIGNIN_ERROR');
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    throw new AuthError(`Authentication failed: ${errorMessage}`, 'AUTH_SIGNIN_ERROR');
   }
 }
 
@@ -177,16 +174,20 @@ async function getUserWithRole(user: FirebaseUser): Promise<AuthUser> {
   }
 }
 
+// 함수의 인자와 반환 타입을 명확하게 지정
+type HandlerFunction<T> = (currentUser: AuthUser, ...args: unknown[]) => Promise<T>;
+type AuthWrapper<T> = (...args: unknown[]) => Promise<T>;
+
 /**
  * Authorization middleware - verifies user has required permission
  * @param requiredPermission Function that checks if user has required permission
  * @returns A wrapped function that verifies permission before executing the handler
  */
 export function withAuth<T>(
-  handler: (currentUser: AuthUser, ...args: any[]) => Promise<T>,
+  handler: HandlerFunction<T>,
   requiredPermission: (user: AuthUser | null) => boolean
-): (...args: any[]) => Promise<T> {
-  return async (...args: any[]): Promise<T> => {
+): AuthWrapper<T> {
+  return async (...args: unknown[]): Promise<T> => {
     const currentUser = await getCurrentUser();
     
     // Check if user has required permission

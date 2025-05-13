@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from 'next/image';
@@ -7,23 +6,19 @@ import { WeekAccordionItem } from '@/components/week-accordion-item';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Share2, Bookmark, FileText, Link2, ExternalLink, Users, Award, MessageSquare, ThumbsUp, Lock, Ticket, BookOpenCheck, PlusCircle, BookText } from 'lucide-react';
+import { ArrowLeft, Share2, Bookmark, FileText, Link2, ExternalLink, Users, Award, MessageSquare, ThumbsUp as _ThumbsUp, Lock, Ticket as _Ticket, BookOpenCheck, PlusCircle, BookText as _BookText, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProgramCompletionModal } from '@/components/program-completion-modal';
 import React, { useState, useEffect } from 'react';
-import type { User as UserType, ProgramCompletion, Program as ProgramType, DiscussionPost } from '@/types';
+import type { User as UserType, ProgramCompletion, Program as ProgramType } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { format, isAfter, parseISO } from 'date-fns';
 import { getProgramBySlug } from '@/services/programService';
 import { mockUser as fallbackMockUser, initialMockDiscussionsData } from '@/lib/mock-data';
 import { useParams } from 'next/navigation';
 
-interface ProgramDetailPageProps {
-  // Params are now obtained via useParams hook
-}
-
-export default function ProgramDetailPage({}: ProgramDetailPageProps) {
+export default function ProgramDetailPage() {
   const { toast } = useToast();
   const routeParams = useParams();
   
@@ -163,6 +158,15 @@ export default function ProgramDetailPage({}: ProgramDetailPageProps) {
 
   const programDiscussions = initialMockDiscussionsData.filter(d => d.programId === program.id && !d.user.toLowerCase().includes("admin"));
 
+  const handleExternalPayment = () => {
+    if (program && program.paymentType === 'paid' && program.paymentLink) {
+      window.open(program.paymentLink, '_blank');
+      toast({
+        title: "Redirecting to Payment",
+        description: "You'll be redirected to an external payment page. Once payment is complete, you'll receive a voucher code via email.",
+      });
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -185,11 +189,25 @@ export default function ProgramDetailPage({}: ProgramDetailPageProps) {
                 data-ai-hint="program details image"
                 priority
               />
+              {program.paymentType === 'paid' && (
+                <div className="absolute top-4 right-4">
+                  <Badge className="bg-accent text-accent-foreground px-3 py-1 text-sm">
+                    {program.price && program.currency ? `${program.currency} ${program.price}` : 'Paid Program'}
+                  </Badge>
+                </div>
+              )}
             </div>
             <div className="md:w-2/3 p-6 md:p-8 flex flex-col justify-between">
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-primary mb-2">{program.title}</h1>
                 <p className="text-base text-muted-foreground mb-4">{program.targetAudience}</p>
+                
+                {program.paymentType === 'free' && (
+                  <Badge variant="outline" className="mb-4 bg-emerald-50 text-emerald-700 border-emerald-200">
+                    Free Program
+                  </Badge>
+                )}
+                
                 {program.tags && program.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-4">
                     {program.tags.map(tag => (
@@ -199,35 +217,40 @@ export default function ProgramDetailPage({}: ProgramDetailPageProps) {
                 )}
                 <p className="text-foreground/90 leading-relaxed mb-6">{program.longDescription || program.description}</p>
               </div>
-              <div className="flex items-center space-x-3">
-                {!isProgramCompletedByCurrentUser ? (
-                     <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleOpenCompletionModal}>
-                        Mark Program as Completed <Award className="ml-2 h-5 w-5"/>
-                     </Button>
-                ) : (
-                    <div className="flex items-center space-x-2">
-                        <Badge variant="default" className="text-lg py-2 px-4 bg-green-600 text-white">
-                            <ThumbsUp className="mr-2 h-5 w-5"/> Program Completed!
-                        </Badge>
-                        <Button size="lg" variant="outline" asChild>
-                            <Link href={`/programs/${program.slug}/report`}>
-                                <BookText className="mr-2 h-5 w-5"/> View My Report
-                            </Link>
-                        </Button>
-                    </div>
+
+              <div className="flex flex-wrap gap-3">
+                {program.paymentType === 'paid' && !canAccessContent && (
+                  <Button 
+                    onClick={handleExternalPayment}
+                    className="bg-accent hover:bg-accent/90 text-accent-foreground"
+                  >
+                    <ShoppingCart className="mr-2 h-4 w-4" /> 
+                    Purchase Program
+                  </Button>
                 )}
-                 {!hasActiveVoucherAccess && !isProgramCompletedByCurrentUser && (
-                    <Button size="lg" variant="outline" asChild>
-                        <Link href="/profile#vouchers_tab">
-                            <Ticket className="mr-2 h-4 w-4"/> Register Voucher
-                        </Link>
-                    </Button>
+                
+                {canAccessContent && !isProgramCompletedByCurrentUser && (
+                  <Button onClick={handleOpenCompletionModal} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                    <BookOpenCheck className="mr-2 h-4 w-4" />
+                    Mark as Completed
+                  </Button>
                 )}
-                <Button variant="outline" size="icon" aria-label="Share Program">
-                  <Share2 className="h-5 w-5" />
+                
+                {isProgramCompletedByCurrentUser && (
+                  <Button disabled className="bg-emerald-100 text-emerald-800 cursor-default">
+                    <Award className="mr-2 h-4 w-4" />
+                    Completed!
+                  </Button>
+                )}
+                
+                <Button variant="outline">
+                  <Bookmark className="mr-2 h-4 w-4" />
+                  Save for Later
                 </Button>
-                <Button variant="outline" size="icon" aria-label="Bookmark Program">
-                  <Bookmark className="h-5 w-5" />
+                
+                <Button variant="outline">
+                  <Share2 className="mr-2 h-4 w-4" />
+                  Share
                 </Button>
               </div>
             </div>

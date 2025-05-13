@@ -1,9 +1,8 @@
-
 "use client";
 
 import { BannerForm, type BannerFormData } from '@/components/admin/banner-form';
 import { useRouter } from 'next/navigation';
-import type { Banner } from '@/types';
+import type { Banner as _Banner } from '@/types';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';

@@ -65,6 +65,11 @@ export interface User {
   customTodoLists?: TodoListActionItemContent[]; 
   userMissions?: UserMission[];
   programCompletions?: ProgramCompletion[];
+  enrolledPrograms?: Array<{
+    id: string;
+    status: 'in_progress' | 'completed';
+  }>;
+  completedProgramIds?: string[];
   registeredVouchers?: Array<{
     voucherCode: string;
     programId: string;
@@ -111,7 +116,7 @@ export interface Program {
     estimatedReadingTime?: number;
     requiresWifi?: boolean;
     offlineSupport?: boolean;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -229,7 +234,7 @@ export interface VideoContent {
     responsive?: boolean;
     fluid?: boolean;
     playbackRates?: number[];
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -279,7 +284,7 @@ export interface BaseActionItemContent {
 export interface TodoListItem {
   id: string;
   text: string;
-  progressScore: number; 
+  progressScore?: number; // Make this optional to fix form initialization issues
 }
 export interface TodoListActionItemContent extends BaseActionItemContent {
   type: 'todo_list';

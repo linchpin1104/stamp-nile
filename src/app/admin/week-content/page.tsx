@@ -1,22 +1,22 @@
-
 "use client";
 
 import { useEffect, useState } from 'react';
+import { useRouter as _useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { WeeksDataTable } from '@/components/admin/weeks-data-table';
-import type { Program, Week } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PlusCircle, LayoutList, ListChecks } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { getPrograms, getProgramById, updateProgram } from '@/services/programService';
+import type { Program as ProgramType, Week as _Week } from '@/types';
 
 export default function ManageWeekContentPage() {
   const { toast } = useToast();
-  const [allPrograms, setAllPrograms] = useState<Program[]>([]);
+  const [allPrograms, setAllPrograms] = useState<ProgramType[]>([]);
   const [selectedProgramId, setSelectedProgramId] = useState<string | null>(null);
-  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
+  const [selectedProgram, setSelectedProgram] = useState<ProgramType | null>(null);
   const [isLoadingPrograms, setIsLoadingPrograms] = useState(true);
   const [isLoadingProgramDetails, setIsLoadingProgramDetails] = useState(false);
 

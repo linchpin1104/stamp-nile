@@ -1,18 +1,17 @@
-
 "use client";
 
 import type { VideoChoiceGroup, VideoContent } from '@/types';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useForm, useFieldArray, _Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { _Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { VideoContentForm, VideoContentFormData } from './video-content-form'; // Assuming a separate form for individual videos
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, _DialogTrigger, _DialogClose } from '@/components/ui/dialog';
 import { useState } from 'react';
 
 const generateId = (prefix = "vid") => `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;

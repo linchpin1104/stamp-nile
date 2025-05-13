@@ -1,14 +1,13 @@
-
 "use client";
 
-import type { QuestionAnswerSessionContent, QAItem } from '@/types';
+import type { QuestionAnswerSessionContent, _QAItem } from '@/types';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, _FormDescription } from '@/components/ui/form';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
@@ -108,7 +107,7 @@ export function QASessionForm({ initialData, onSubmit, onCancel }: QASessionForm
             <PlusCircle className="h-4 w-4 mr-2" /> Add Prompt
             </Button>
         )}
-        <FormMessage>{(form.formState.errors as any)?.prompts?.message}</FormMessage>
+        <FormMessage>{(form.formState.errors as Record<string, { message?: string }>)?.prompts?.message}</FormMessage>
 
         <div className="flex justify-end space-x-3 pt-4 sticky bottom-0 bg-popover py-3 border-t">
           <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>

@@ -1,12 +1,11 @@
-
 "use client";
 
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, MessageSquare, ThumbsUp, ThumbsDown, Send, Flag, UserX, EyeOff } from 'lucide-react';
+import { ArrowLeft, MessageSquare, ThumbsUp, ThumbsDown, Send, Flag, UserX } from 'lucide-react';
 import Link from 'next/link';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -63,7 +62,7 @@ type MockDiscussion = {
 
 export default function DiscussionDetailPage() {
   const { discussionId: routeDiscussionId } = useParams();
-  const router = useRouter();
+  const _router = useRouter();
   const { toast } = useToast();
   
   const [discussionId, setDiscussionIdState] = useState<string | null>(null);
@@ -100,7 +99,7 @@ export default function DiscussionDetailPage() {
         <MessageSquare className="w-16 h-16 text-muted-foreground mb-4" />
         <h2 className="text-xl font-semibold text-muted-foreground mb-2">Discussion not found.</h2>
         <p className="text-muted-foreground mb-6">The discussion thread may have been moved, deleted, or the original poster may have been banned.</p>
-        <Button onClick={() => router.push('/admin/program-discussions')}>
+        <Button onClick={() => _router.push('/admin/program-discussions')}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Discussions
         </Button>
       </div>
@@ -142,7 +141,7 @@ export default function DiscussionDetailPage() {
       });
       // Optionally, redirect if the current discussion belongs to the banned user
       if (discussion.user === userName) {
-        router.push('/admin/program-discussions');
+        _router.push('/admin/program-discussions');
       }
     }
   };

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -15,7 +14,7 @@ import { getProgramById, updateProgram } from '@/services/programService';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 
-import { VideoContentForm, VideoContentFormData } from '@/components/admin/content-builder/video-content-form';
+import { VideoContentForm } from '@/components/admin/content-builder/video-content-form';
 import { TextContentForm } from '@/components/admin/content-builder/text-content-form';
 import { ChecklistForm } from '@/components/admin/content-builder/checklist-content-form';
 import { ActionItemForm } from '@/components/admin/content-builder/action-item-content-form';
@@ -25,7 +24,6 @@ import { PsychologicalTestForm } from '@/components/admin/content-builder/psycho
 import { QASessionForm } from '@/components/admin/content-builder/qa-session-form';
 import { MissionReminderForm } from '@/components/admin/content-builder/mission-reminder-form';
 import { OXQuizForm } from '@/components/admin/content-builder/ox-quiz-form';
-import { RichTextEditor } from '@/components/admin/content-builder/rich-text-editor';
 import type { ChecklistItem, TodoListActionItemContent } from '@/types'; 
 
 
@@ -91,8 +89,8 @@ export const availableLearningElementTypes: { id: LearningElementType; label: st
 
 const getLearningElementTitle = (element: LearningElement): string => {
   if (element.title) return element.title; 
-  if ('content' in element && element.content && typeof (element.content as any).title === 'string') {
-    return (element.content as any).title;
+  if ('content' in element && element.content && typeof (element.content as unknown).title === 'string') {
+    return (element.content as unknown as { title: string }).title;
   }
   if(element.type === 'interactive_scenario_link' && 'scenarioId' in element && element.scenarioId) {
     return `Scenario: ${element.scenarioId}`;
@@ -115,7 +113,7 @@ const learningElementTypeIcons: Record<LearningElementType, React.ElementType> =
 
 
 export default function EditWeekPage() {
-  const router = useRouter();
+  const _router = useRouter();
   const { programId: routeProgramId, weekId: routeWeekId } = useParams();
   const { toast } = useToast();
 
@@ -151,7 +149,7 @@ export default function EditWeekPage() {
          // Only show error if params were expected but not found after initial load attempt
         if(programId === null && weekId === null && !isLoading) {
           toast({ title: "Invalid URL", description: "Program or Week ID missing.", variant: "destructive" });
-          router.push('/admin/programs');
+          _router.push('/admin/programs');
         }
         // If still loading or params not fully resolved yet, don't fetch
         if (isLoading && (programId === undefined || weekId === undefined)) return;
@@ -168,11 +166,11 @@ export default function EditWeekPage() {
           setWeek(foundWeek);
         } else {
           toast({ title: "Error", description: "Week not found in this program.", variant: "destructive" });
-          router.push(`/admin/programs/${programId}/edit`);
+          _router.push(`/admin/programs/${programId}/edit`);
         }
       } else {
         toast({ title: "Error", description: "Program not found.", variant: "destructive" });
-        router.push('/admin/programs');
+        _router.push('/admin/programs');
       }
       setIsLoading(false);
     };
@@ -184,11 +182,11 @@ export default function EditWeekPage() {
         setIsLoading(false); // Stop loading, error will be shown by render logic
     }
 
-  }, [programId, weekId, router, toast]); // Removed isLoading from deps to avoid re-fetch loop
+  }, [programId, weekId, _router, toast, isLoading]); // isLoading 추가, 조건부 실행으로 루프 방지됨
 
   const updateAndPersistProgramState = async (updatedProgramState: Program) => {
       if (!programId) return false;
-      const { id, ...programDataToUpdate } = updatedProgramState; 
+      const { id: _id, ...programDataToUpdate } = updatedProgramState; 
       const success = await updateProgram(programId, programDataToUpdate);
       if (success) {
         setProgram(updatedProgramState); 
@@ -222,7 +220,7 @@ export default function EditWeekPage() {
     }
   };
 
-  const handleSaveLearningElementContent = async (updatedContent: any) => { 
+  const handleSaveLearningElementContent = async (updatedContent: VideoContent | TextContent | Checklist | ActionItemContent | VideoChoiceGroup | PsychologicalTestContent | QuestionAnswerSessionContent | MissionReminderContent | OXQuizContent) => { 
     if (!program || !week || !editingElement || !programId) return;
 
     const updatedLearningElements = (week.learningElements || []).map(el =>
@@ -330,7 +328,8 @@ export default function EditWeekPage() {
          const scenarioLinkData = {
            id: editingElement.id,
            title: editingElement.title || '', 
-           scenarioId: editingElement.scenarioId || '', 
+           scenarioId: editingElement.scenarioId || '',
+           type: 'interactive_scenario_link' as const,
          };
          return <InteractiveScenarioLinkForm initialData={scenarioLinkData} onSubmit={handleSaveInteractiveScenarioLink} onCancel={() => setEditingElement(null)} />;
       case 'psychological_test':

@@ -1,26 +1,23 @@
-
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { ArrowLeft, CheckSquare, HelpCircle, ThumbsUp, ThumbsDown, CheckCircle2, XCircle } from 'lucide-react';
-import type { Program, Week, OXQuizContent, OXQuizQuestion, User as UserType, UserOXQuizResponseItem } from '@/types';
+import { ArrowLeft, CheckSquare, CheckCircle2, XCircle } from 'lucide-react';
+import type { Program, Week, OXQuizContent, User as UserType, UserOXQuizResponseItem } from '@/types';
 import { getProgramBySlug } from '@/services/programService';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { mockUser as fallbackMockUser } from '@/lib/mock-data';
 
-interface UserResponse extends UserOXQuizResponseItem {} 
+// Use type alias instead of empty interface
+type UserResponse = UserOXQuizResponseItem;
 
 export default function OXQuizPage() {
   const { slug: routeSlug, weekId: routeWeekId, quizId: routeQuizId } = useParams();
-  const router = useRouter();
   const { toast } = useToast();
 
   const [programSlug, setProgramSlugState] = useState<string | null>(null);
@@ -42,9 +39,11 @@ export default function OXQuizPage() {
   useEffect(() => {
     if (typeof routeSlug === 'string') setProgramSlugState(routeSlug); else setProgramSlugState(null);
   }, [routeSlug]);
+  
   useEffect(() => {
     if (typeof routeWeekId === 'string') setWeekIdState(routeWeekId); else setWeekIdState(null);
   }, [routeWeekId]);
+  
   useEffect(() => {
     if (typeof routeQuizId === 'string') setQuizIdState(routeQuizId); else setQuizIdState(null);
   }, [routeQuizId]);
@@ -62,7 +61,6 @@ export default function OXQuizPage() {
       setCurrentUser(fallbackMockUser);
     }
   }, []);
-
 
   useEffect(() => {
     const loadQuizData = async () => {
@@ -129,7 +127,7 @@ export default function OXQuizPage() {
   };
 
   const handleQuizCompletion = useCallback(() => {
-    if (!quizContent || !currentUser || userResponses.length === 0 && quizContent.questions.length > 0) {
+    if (!quizContent || !currentUser || (userResponses.length === 0 && quizContent.questions.length > 0)) {
       setShowResults(true); 
       return;
     }
@@ -209,9 +207,11 @@ export default function OXQuizPage() {
             })}
           </CardContent>
           <CardFooter>
-             <Button onClick={() => router.push(programSlug && weekId ? `/programs/${programSlug}/week/${weekId}` : (programSlug ? `/programs/${programSlug}`: "/programs"))} className="w-full">
+            <Button asChild className="w-full">
+              <Link href={programSlug && weekId ? `/programs/${programSlug}/week/${weekId}` : (programSlug ? `/programs/${programSlug}`: "/programs")}>
                 <CheckCircle2 className="mr-2 h-4 w-4" /> Done
-             </Button>
+              </Link>
+            </Button>
           </CardFooter>
         </Card>
       </div>

@@ -1,7 +1,6 @@
-
 "use client";
 
-import type { TodoListActionItemContent } from '@/types';
+import type { _TodoListActionItemContent } from '@/types';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -111,7 +110,10 @@ export function UserTodoListForm({ initialData, onSubmit, onCancel }: UserTodoLi
           <Button type="button" variant="outline" size="sm" onClick={() => append({ id: generateId('todoSubItem'), text: '' })}>
             <PlusCircle className="h-4 w-4 mr-2" /> Add Task
           </Button>
-          <FormMessage>{(form.formState.errors as any)?.todoItems?.message || (form.formState.errors.todoItems as any)?.root?.message}</FormMessage>
+          <FormMessage>
+            {(form.formState.errors as Record<string, unknown>)?.items?.message || 
+             (form.formState.errors.items as Record<string, { root?: { message?: string } }>)?.root?.message}
+          </FormMessage>
         </div>
 
         <div className="flex justify-end space-x-3 pt-4 sticky bottom-0 bg-popover py-3 border-t -mx-1 px-1">

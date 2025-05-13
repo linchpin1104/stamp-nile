@@ -6,15 +6,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarTrigger,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-  SidebarGroup,
-  SidebarGroupLabel
+  SidebarInset
 } from '@/components/ui/sidebar';
 import { AdminNav } from '@/components/admin/admin-nav';
 import Link from 'next/link';
@@ -31,8 +23,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export const metadata: Metadata = {
-  title: 'Admin - Parenting Pathways',
-  description: 'Admin panel for Parenting Pathways.',
+  title: '관리자 - 페어런팅 패스웨이',
+  description: '페어런팅 패스웨이 관리자 패널.',
 };
 
 export default function AdminLayout({
@@ -41,14 +33,14 @@ export default function AdminLayout({
   children: React.ReactNode;
 }>) {
   // Mock admin user for avatar
-  const adminUserName = "Admin User";
+  const adminUserName = "관리자";
   return (
     <SidebarProvider defaultOpen>
       <Sidebar variant="sidebar" collapsible="icon">
         <SidebarHeader className="p-4">
             <Link href="/admin" className="flex items-center gap-2 text-primary">
               <Baby className="h-7 w-7" />
-              <span className="font-semibold text-lg group-data-[collapsible=icon]:hidden">Admin Panel</span>
+              <span className="font-semibold text-lg group-data-[collapsible=icon]:hidden">관리자 패널</span>
             </Link>
         </SidebarHeader>
         <SidebarContent>
@@ -56,10 +48,10 @@ export default function AdminLayout({
         </SidebarContent>
         <SidebarFooter className="p-2 border-t">
           <div className="group-data-[collapsible=icon]:hidden flex items-center justify-between">
-             <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Parenting Pathways</p>
+             <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} 페어런팅 패스웨이</p>
              {/* Optional: Link back to main site */}
              <Button variant="link" size="sm" asChild className="text-xs">
-                <Link href="/">View Site</Link>
+                <Link href="/">사이트 보기</Link>
              </Button>
           </div>
           <div className="group-data-[collapsible=icon]:visible group-data-[state=expanded]:hidden mx-auto">
@@ -94,7 +86,7 @@ export default function AdminLayout({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/">
-                    Exit Admin
+                    관리자 나가기
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>

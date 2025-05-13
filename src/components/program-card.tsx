@@ -23,6 +23,13 @@ export function ProgramCard({ program }: ProgramCardProps) {
             className="w-full h-48 object-cover"
             data-ai-hint="program theme image"
           />
+          {program.paymentType === 'paid' && (
+            <div className="absolute top-3 right-3">
+              <Badge className="bg-accent text-accent-foreground px-2 py-1">
+                {program.price && program.currency ? `${program.currency} ${program.price}` : 'Paid'}
+              </Badge>
+            </div>
+          )}
         </Link>
       </CardHeader>
       <CardContent className="p-6 flex-grow">
@@ -38,11 +45,18 @@ export function ProgramCard({ program }: ProgramCardProps) {
             ))}
           </div>
         )}
+        {program.paymentType === 'free' && (
+          <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">Free</Badge>
+        )}
       </CardContent>
       <CardFooter className="p-6 pt-0">
         <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
           <Link href={`/programs/${program.slug}`}>
-            View Program <ArrowRight className="ml-2 h-4 w-4" />
+            {program.paymentType === 'paid' ? (
+              <>View Details <ArrowRight className="ml-2 h-4 w-4" /></>
+            ) : (
+              <>View Program <ArrowRight className="ml-2 h-4 w-4" /></>
+            )}
           </Link>
         </Button>
       </CardFooter>

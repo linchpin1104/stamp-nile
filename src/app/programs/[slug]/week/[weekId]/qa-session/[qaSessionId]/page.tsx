@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -9,17 +8,17 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, CheckCircle, HelpCircle } from 'lucide-react';
-import type { Program, Week, QuestionAnswerSessionContent, QAItem, User as UserType, UserQASessionResponseItem } from '@/types';
+import type { Program, Week, QuestionAnswerSessionContent, User as UserType, UserQASessionResponseItem } from '@/types';
 import { getProgramBySlug } from '@/services/programService';
 import { useToast } from '@/hooks/use-toast';
 import { mockUser as fallbackMockUser } from '@/lib/mock-data';
-import { Separator } from '@/components/ui/separator';
+import { Separator as _Separator } from '@/components/ui/separator';
 
-interface UserQAResponse extends UserQASessionResponseItem {} 
+type _UserQAResponse = UserQASessionResponseItem;
 
 export default function QASessionPage() {
   const { slug: routeSlug, weekId: routeWeekId, qaSessionId: routeQASessionId } = useParams();
-  const router = useRouter();
+  const _router = useRouter();
   const { toast } = useToast();
 
   const [programSlug, setProgramSlugState] = useState<string | null>(null);
@@ -210,7 +209,7 @@ export default function QASessionPage() {
                     Submit All Answers
                 </Button>
             )}
-             <Button onClick={() => router.push(programSlug && weekId ? `/programs/${programSlug}/week/${weekId}` : (programSlug ? `/programs/${programSlug}` : "/programs"))} className="w-full sm:w-auto" variant="outline">
+             <Button onClick={() => _router.push(programSlug && weekId ? `/programs/${programSlug}/week/${weekId}` : (programSlug ? `/programs/${programSlug}` : "/programs"))} className="w-full sm:w-auto" variant="outline">
                 Return to Week
              </Button>
         </CardFooter>

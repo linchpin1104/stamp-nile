@@ -1,11 +1,8 @@
-
-
 "use client";
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
-import { LayoutDashboard, BookCopy, Settings, Users, BarChart3, MessagesSquare, Activity, Ticket, Image as ImageIcon, LayoutList } from 'lucide-react'; // Added Ticket, ImageIcon, LayoutList
+import { LayoutDashboard, BookCopy, Users, BarChart3, MessagesSquare, Activity, Ticket, Image as ImageIcon, LayoutList } from 'lucide-react'; // Added Ticket, ImageIcon, LayoutList
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -14,31 +11,46 @@ import {
   SidebarGroupLabel
 } from '@/components/ui/sidebar';
 
-const adminNavItems = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  key?: string;
+}
+
+interface NavSection {
+  group?: string;
+  href?: string;
+  label?: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  items?: NavItem[];
+}
+
+const adminNavItems: NavSection[] = [
+  { href: '/admin', label: '대시보드', icon: LayoutDashboard, key: 'admin.dashboard' } as NavItem,
   {
-    group: 'Management',
+    group: '관리',
     items: [
-      { href: '/admin/programs', label: 'Programs', icon: BookCopy },
-      { href: '/admin/week-content', label: 'Week Content', icon: LayoutList },
-      { href: '/admin/banners', label: 'Banners', icon: ImageIcon },
-      { href: '/admin/program-discussions', label: 'Program Discussions', icon: MessagesSquare },
-      { href: '/admin/users', label: 'Users', icon: Users },
-      { href: '/admin/vouchers', label: 'Vouchers', icon: Ticket }, 
+      { href: '/admin/programs', label: '프로그램 관리', icon: BookCopy, key: 'admin.programs' },
+      { href: '/admin/week-content', label: '주차별 콘텐츠', icon: LayoutList, key: 'admin.weekContent' },
+      { href: '/admin/banners', label: '배너 관리', icon: ImageIcon, key: 'admin.banners' },
+      { href: '/admin/program-discussions', label: '프로그램 토론', icon: MessagesSquare, key: 'admin.programDiscussions' },
+      { href: '/admin/users', label: '사용자 관리', icon: Users, key: 'admin.users' },
+      { href: '/admin/vouchers', label: '바우처 관리', icon: Ticket, key: 'admin.vouchers' }, 
     ]
   },
   {
-    group: 'Tools & Analytics',
+    group: '도구 및 분석',
     items: [
-        { href: '/admin/program-progress', label: 'Program Progress', icon: Activity },
-        { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 }, 
-        // { href: '/admin/content-builder', label: 'Content Builder', icon: Blocks }, // Future
+        { href: '/admin/program-progress', label: '프로그램 진행 현황', icon: Activity, key: 'admin.programProgress' },
+        { href: '/admin/analytics', label: '분석', icon: BarChart3, key: 'admin.analytics' },
+        // { href: '/admin/content-builder', label: '콘텐츠 빌더', icon: Blocks }, // Future
     ]
   },
   {
-    group: 'Settings',
+    group: '설정',
     items: [
-        // { href: '/admin/settings', label: 'General Settings', icon: Settings }, // Future
+        // { href: '/admin/settings', label: '일반 설정', icon: _Settings }, // Future
     ]
   }
 ];
@@ -55,7 +67,7 @@ export function AdminNav() {
                 {section.icon && <section.icon />}
                 <span className="group-data-[collapsible=icon]:hidden">{section.group}</span>
             </SidebarGroupLabel>
-            {section.items.map(item => (
+            {section.items?.map(item => (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
@@ -77,8 +89,8 @@ export function AdminNav() {
                 isActive={pathname === section.href}
                 tooltip={{ children: section.label, side: 'right', className: 'ml-2' }}
               >
-              <Link href={section.href}>
-                <section.icon />
+              <Link href={section.href || '#'}>
+                {section.icon && <section.icon />}
                 <span className="group-data-[collapsible=icon]:hidden">{section.label}</span>
               </Link>
             </SidebarMenuButton>

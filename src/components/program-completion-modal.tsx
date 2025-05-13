@@ -1,7 +1,6 @@
-
 "use client";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Award, CheckCircle, Star } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -54,7 +53,7 @@ export function ProgramCompletionModal({ isOpen, onClose, programTitle }: Progra
         <div className="my-6 p-6 bg-secondary/20 rounded-lg border border-primary/30 relative overflow-hidden">
           <h2 className="text-xl font-semibold text-primary mb-2">Certificate of Completion</h2>
           <p className="text-foreground">This certifies that you have completed all requirements for the</p>
-          <p className="text-lg font-medium text-accent my-1">"{programTitle}"</p>
+          <p className="text-lg font-medium text-accent my-1">&quot;{programTitle}&quot;</p>
           <p className="text-foreground">program on {new Date().toLocaleDateString()}.</p>
 
           {showStamp && (

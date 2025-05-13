@@ -1,8 +1,6 @@
-
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import {
   ColumnDef,
   flexRender,
@@ -45,104 +43,49 @@ interface UsersDataTableProps {
   onDeleteUser: (userId: string, userName: string) => void;
 }
 
-export const getUserColumns = (
-  onBanUser: (userId: string, userName: string) => void,
-  onDeleteUser: (userId: string, userName: string) => void
-): ColumnDef<User>[] => [
-  {
-    accessorKey: "name",
-    header: ({ column }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-        Name <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
-  },
-  {
-    accessorKey: "email",
-    header: ({ column }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-        Email <Mail className="ml-2 h-4 w-4" /> <ArrowUpDown className="ml-1 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => row.getValue("email") || <span className="text-muted-foreground">-</span>,
-  },
-  {
-    accessorKey: "phoneNumber",
-    header: "Phone (Optional)",
-    cell: ({ row }) => row.getValue("phoneNumber") || <span className="text-muted-foreground">-</span>,
-  },
-  {
-    accessorKey: "parentalRole",
-    header: "Role",
-    cell: ({ row }) => <Badge variant="secondary" className="capitalize">{row.getValue("parentalRole")}</Badge>,
-  },
-  {
-    accessorKey: "children",
-    header: "Children",
-    cell: ({ row }) => {
-      const children = row.getValue("children") as User["children"];
-      return <Badge variant="outline">{children?.length || 0}</Badge>;
-    },
-  },
-   {
-    accessorKey: "residentialArea",
-    header: "Area",
-    cell: ({ row }) => <div className="text-sm text-muted-foreground truncate max-w-[150px]">{row.getValue("residentialArea")}</div>,
-  },
-  {
-    accessorKey: "registrationDate",
-    header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Registered <CalendarDays className="ml-2 h-4 w-4" /> <ArrowUpDown className="ml-1 h-4 w-4" />
-        </Button>
-    ),
-    cell: ({ row }) => {
-        const date = row.getValue("registrationDate") as string | undefined;
-        return date ? format(new Date(date), "yyyy-MM-dd") : <span className="text-muted-foreground">-</span>;
-    },
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      const user = row.original;
-      const router = useRouter();
+interface CellActionProps {
+  user: User;
+  onBanUser: (userId: string, userName: string) => void;
+  onDeleteUser: (userId: string, userName: string) => void;
+}
 
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>User Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => router.push(`/admin/users/${user.id}/view`)} className="cursor-pointer">
-              <Eye className="mr-2 h-4 w-4" /> View Details
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push(`/admin/users/${user.id}/edit`)} className="cursor-pointer">
-              <Edit className="mr-2 h-4 w-4" /> Edit User
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => onBanUser(user.id, user.name)}
-              className="text-orange-600 focus:text-orange-600 focus:bg-orange-500/10 cursor-pointer"
-            >
-              <UserX className="mr-2 h-4 w-4" /> Ban User
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => onDeleteUser(user.id, user.name)}
-              className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-            >
-              <Trash2 className="mr-2 h-4 w-4" /> Delete User
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
-  },
-];
+// 독립적인 셀 컴포넌트로 분리
+function CellActions({ user, onBanUser, onDeleteUser }: CellActionProps) {
+  const router = useRouter();
+  
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>User Actions</DropdownMenuLabel>
+        <DropdownMenuItem onClick={() => router.push(`/admin/users/${user.id}/view`)} className="cursor-pointer">
+          <Eye className="mr-2 h-4 w-4" /> View Details
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push(`/admin/users/${user.id}/edit`)} className="cursor-pointer">
+          <Edit className="mr-2 h-4 w-4" /> Edit User
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => onBanUser(user.id, user.name)}
+          className="text-orange-600 focus:text-orange-600 focus:bg-orange-500/10 cursor-pointer"
+        >
+          <UserX className="mr-2 h-4 w-4" /> Ban User
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => onDeleteUser(user.id, user.name)}
+          className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+        >
+          <Trash2 className="mr-2 h-4 w-4" /> Delete User
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export function UsersDataTable({ data, onBanUser, onDeleteUser }: UsersDataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([{ id: 'registrationDate', desc: true }]);
@@ -236,4 +179,70 @@ export function UsersDataTable({ data, onBanUser, onDeleteUser }: UsersDataTable
     </div>
   );
 }
+
+export const getUserColumns = (
+  onBanUser: (userId: string, userName: string) => void,
+  onDeleteUser: (userId: string, userName: string) => void
+): ColumnDef<User>[] => [
+  {
+    accessorKey: "name",
+    header: ({ column }) => (
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+        Name <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
+  },
+  {
+    accessorKey: "email",
+    header: ({ column }) => (
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+        Email <Mail className="ml-2 h-4 w-4" /> <ArrowUpDown className="ml-1 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => row.getValue("email") || <span className="text-muted-foreground">-</span>,
+  },
+  {
+    accessorKey: "phoneNumber",
+    header: "Phone (Optional)",
+    cell: ({ row }) => row.getValue("phoneNumber") || <span className="text-muted-foreground">-</span>,
+  },
+  {
+    accessorKey: "parentalRole",
+    header: "Role",
+    cell: ({ row }) => <Badge variant="secondary" className="capitalize">{row.getValue("parentalRole")}</Badge>,
+  },
+  {
+    accessorKey: "children",
+    header: "Children",
+    cell: ({ row }) => {
+      const children = row.getValue("children") as User["children"];
+      return <Badge variant="outline">{children?.length || 0}</Badge>;
+    },
+  },
+   {
+    accessorKey: "residentialArea",
+    header: "Area",
+    cell: ({ row }) => <div className="text-sm text-muted-foreground truncate max-w-[150px]">{row.getValue("residentialArea")}</div>,
+  },
+  {
+    accessorKey: "registrationDate",
+    header: ({ column }) => (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+            Registered <CalendarDays className="ml-2 h-4 w-4" /> <ArrowUpDown className="ml-1 h-4 w-4" />
+        </Button>
+    ),
+    cell: ({ row }) => {
+        const date = row.getValue("registrationDate") as string | undefined;
+        return date ? format(new Date(date), "yyyy-MM-dd") : <span className="text-muted-foreground">-</span>;
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const user = row.original;
+      return <CellActions user={user} onBanUser={onBanUser} onDeleteUser={onDeleteUser} />;
+    },
+  },
+];
 

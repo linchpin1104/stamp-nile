@@ -113,7 +113,7 @@ export function MoodSelector({ currentUser, onMoodSaved }: MoodSelectorProps) {
       customWithWhom: selectedWithWhom === 'other_with_whom' ? customWithWhomText.trim() : undefined,
     };
 
-    let updatedMoodLog = [...(currentUser.moodLog || [])];
+    const updatedMoodLog = [...(currentUser.moodLog || [])];
     const existingEntryIndex = updatedMoodLog.findIndex(entry => entry.date === todayStr);
 
     if (existingEntryIndex > -1) {

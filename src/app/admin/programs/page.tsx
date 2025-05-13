@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -25,8 +24,8 @@ export default function AdminProgramsPage() {
       } catch (error) {
         console.error("Error fetching programs from Firestore:", error);
         toast({
-          title: "Error",
-          description: "Could not load programs. Please try again.",
+          title: "오류",
+          description: "프로그램을 불러올 수 없습니다. 다시 시도해주세요.",
           variant: "destructive",
         });
       }
@@ -41,13 +40,13 @@ export default function AdminProgramsPage() {
     if (success) {
       setPrograms(prevPrograms => prevPrograms.filter(p => p.id !== programId));
       toast({
-        title: "Program Deleted",
-        description: "The program has been successfully deleted.",
+        title: "프로그램 삭제됨",
+        description: "프로그램이 성공적으로 삭제되었습니다.",
       });
     } else {
       toast({
-        title: "Error",
-        description: "Failed to delete program. Please try again.",
+        title: "오류",
+        description: "프로그램 삭제에 실패했습니다. 다시 시도해주세요.",
         variant: "destructive",
       });
     }
@@ -56,7 +55,7 @@ export default function AdminProgramsPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <p className="text-muted-foreground">Loading programs...</p>
+        <p className="text-muted-foreground">프로그램 로딩 중...</p>
       </div>
     );
   }
@@ -65,21 +64,21 @@ export default function AdminProgramsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-primary">Program Management</h1>
-          <p className="text-muted-foreground">View, create, and manage all educational programs.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">프로그램 관리</h1>
+          <p className="text-muted-foreground">모든 교육 프로그램을 보고, 생성하고, 관리합니다.</p>
         </div>
         <Button asChild className="bg-accent hover:bg-accent/90 text-accent-foreground">
           <Link href="/admin/programs/create">
             <PlusCircle className="mr-2 h-5 w-5" />
-            Add New Program
+            새 프로그램 추가
           </Link>
         </Button>
       </div>
       
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>All Programs</CardTitle>
-          <CardDescription>A list of all programs currently in the system.</CardDescription>
+          <CardTitle>모든 프로그램</CardTitle>
+          <CardDescription>시스템에 있는 모든 프로그램 목록입니다.</CardDescription>
         </CardHeader>
         <CardContent>
           <ProgramsDataTable data={programs} onDeleteProgram={handleDeleteProgram} />

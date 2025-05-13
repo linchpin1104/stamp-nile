@@ -1,11 +1,10 @@
-
 "use client";
 
 import type { Checklist as ChecklistType, ChecklistItem as ChecklistItemType } from '@/types';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Edit3, Trash2 } from 'lucide-react';
@@ -29,16 +28,24 @@ export function ChecklistView({ checklist, onChecklistItemChange, onEdit, onDele
   const [items, setItems] = useState<ChecklistItemType[]>(() =>
     ensureItemIds(checklist.items || []).map(item => ({ ...item, isChecked: !!item.isChecked }))
   );
+  
+  const prevChecklistIdRef = useRef<string>(checklist.id);
+  const prevItemsRef = useRef<ChecklistItemType[]>(checklist.items || []);
 
   useEffect(() => {
-    // Only re-initialize items if the checklist ID changes or if items fundamentally change
-    // This check helps prevent infinite loops if parent re-renders checklist object without actual data change
-    if (checklist.id !== (items[0]?.id?.startsWith(checklist.id) ? checklist.id : 'stale')) {
+    // Only re-initialize items if the checklist ID changes or if items have changed
+    const prevChecklistId = prevChecklistIdRef.current;
+    const prevItems = prevItemsRef.current;
+    
+    if (checklist.id !== prevChecklistId || 
+        JSON.stringify(checklist.items) !== JSON.stringify(prevItems)) {
       setItems(
         ensureItemIds(checklist.items || []).map(item => ({ ...item, isChecked: !!item.isChecked }))
       );
+      prevChecklistIdRef.current = checklist.id;
+      prevItemsRef.current = [...(checklist.items || [])];
     }
-  }, [checklist.id, checklist.items]); // Watch items prop too, but parent needs to memoize it if possible
+  }, [checklist.id, checklist.items]);
 
   const handleCheckedChange = useCallback((itemId: string, checked: boolean) => {
     setItems(prevItems =>

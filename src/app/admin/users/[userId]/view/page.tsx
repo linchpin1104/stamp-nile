@@ -1,10 +1,9 @@
-
 "use client";
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import type { User, ChildInfo } from '@/types';
+import type { User } from '@/types';
 import { mockUsers as initialMockUsers } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -15,7 +14,7 @@ import { format } from 'date-fns';
 import { Label } from '@/components/ui/label'; 
 
 export default function ViewUserPage() {
-  const router = useRouter();
+  const _router = useRouter();
   const { userId: routeUserId } = useParams();
   
   const [userId, setUserIdState] = useState<string | null>(null);

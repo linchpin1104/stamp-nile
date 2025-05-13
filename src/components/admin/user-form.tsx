@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -8,9 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import type { User, ChildInfo } from '@/types';
-import { useEffect } from 'react';
-import { PlusCircle, Trash2, User as UserIcon, Phone, Mail, MapPin, Users, Smile, CalendarDays } from 'lucide-react';
+import type { User } from '@/types';
+import { PlusCircle, Trash2, User as UserIcon, Phone, Mail, MapPin, Smile, CalendarDays } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format, parseISO } from 'date-fns';
 

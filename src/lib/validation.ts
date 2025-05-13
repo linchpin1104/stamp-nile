@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { Program, Week } from '@/types';
 import { ValidationError } from './errors';
 
 // Define a more precise type for validation results
@@ -17,6 +16,12 @@ export const programSchema = z.object({
   longDescription: z.string().max(5000, 'Long description is too long').optional(),
   imageUrl: z.string().url('Invalid image URL'),
   targetAudience: z.string().min(2, 'Target audience must be at least 2 characters'),
+  paymentType: z.enum(['free', 'paid'], {
+    errorMap: () => ({ message: 'Please select a valid payment type (free or paid)' }),
+  }),
+  price: z.number().min(0, 'Price must be a positive number').optional(),
+  currency: z.string().optional(),
+  paymentLink: z.string().url('Invalid payment URL').optional(),
   weeks: z.array(
     z.object({
       id: z.string().optional(), // Optional for creation
@@ -36,7 +41,25 @@ export const programSchema = z.object({
       audience: z.string().optional(),
     })
   ).optional(),
-});
+}).refine(
+  data => !(data.paymentType === 'paid' && (!data.price || data.price <= 0)),
+  {
+    message: 'Price is required and must be greater than 0 for paid programs',
+    path: ['price'],
+  }
+).refine(
+  data => !(data.paymentType === 'paid' && !data.currency),
+  {
+    message: 'Currency is required for paid programs',
+    path: ['currency'],
+  }
+).refine(
+  data => !(data.paymentType === 'paid' && !data.paymentLink),
+  {
+    message: 'Payment link is required for paid programs',
+    path: ['paymentLink'],
+  }
+);
 
 /**
  * Week schema for validation
@@ -55,13 +78,31 @@ export const weekSchema = z.object({
  * @returns The validated program data
  * @throws ValidationError if validation fails
  */
-export function validateProgram(data: Record<string, any>, isUpdate = false): ValidatedProgram {
+export function validateProgram(data: Record<string, unknown>, isUpdate = false): ValidatedProgram {
   try {
-    const schema = isUpdate 
-      ? programSchema.partial() // Make all fields optional for updates
-      : programSchema;
+    if (isUpdate) {
+      // For updates, we just validate the fields that are provided
+      // This avoids the refine validation for fields that might not be included in the update
+      const partialSchema = z.object({
+        title: z.string().min(2).optional(),
+        slug: z.string().min(2).optional(),
+        description: z.string().min(10).optional(),
+        longDescription: z.string().optional(),
+        imageUrl: z.string().url().optional(),
+        targetAudience: z.string().min(2).optional(),
+        paymentType: z.enum(['free', 'paid']).optional(),
+        price: z.number().min(0).optional(),
+        currency: z.string().optional(),
+        paymentLink: z.string().url().optional(),
+        weeks: z.array(z.any()).optional(),
+        tags: z.array(z.string()).optional(),
+        companySpecificDocuments: z.array(z.any()).optional(),
+      });
+      return partialSchema.parse(data) as ValidatedProgram;
+    }
     
-    return schema.parse(data) as ValidatedProgram;
+    // For new programs, use the full schema with refines
+    return programSchema.parse(data) as ValidatedProgram;
   } catch (error) {
     if (error instanceof z.ZodError) {
       const firstError = error.errors[0];
@@ -81,7 +122,7 @@ export function validateProgram(data: Record<string, any>, isUpdate = false): Va
  * @returns The validated week data
  * @throws ValidationError if validation fails
  */
-export function validateWeek(data: Record<string, any>, isUpdate = false): ValidatedWeek {
+export function validateWeek(data: Record<string, unknown>, isUpdate = false): ValidatedWeek {
   try {
     const schema = isUpdate 
       ? weekSchema.partial() // Make all fields optional for updates

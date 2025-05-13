@@ -15,6 +15,8 @@ import {
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react'; 
+import { useLanguage } from '@/lib/i18n/language-context';
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 // Mock auth state
 const useMockAuth = () => {
@@ -50,10 +52,16 @@ const useMockAuth = () => {
 export function Header() {
   const pathname = usePathname();
   const { isAuthenticated, userName, userEmail, logout } = useMockAuth(); 
+  const { t, setIsAdmin } = useLanguage();
+
+  useEffect(() => {
+    // Update isAdmin state based on pathname
+    setIsAdmin(pathname.startsWith('/admin'));
+  }, [pathname, setIsAdmin]);
 
   const navItems = [
-    { href: '/', label: 'Home', icon: Home },
-    { href: '/programs', label: 'Programs', icon: BookOpenText },
+    { href: '/', label: t('nav.home'), icon: Home },
+    { href: '/programs', label: t('nav.programs'), icon: BookOpenText },
   ];
 
   if (pathname.startsWith('/admin')) {
@@ -92,12 +100,14 @@ export function Header() {
                   pathname.startsWith('/admin') ? "text-accent font-semibold" : "text-foreground/70"
                 )}
               >
-                <ShieldCheck className="inline-block mr-1 h-4 w-4" /> Admin
+                <ShieldCheck className="inline-block mr-1 h-4 w-4" /> {t('nav.admin')}
               </Link>
            )}
         </nav>
 
         <div className="flex items-center space-x-3">
+          <LanguageSwitcher />
+          
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -122,19 +132,19 @@ export function Header() {
                 <DropdownMenuItem asChild>
                   <Link href="/profile">
                     <UserCircle className="mr-2 h-4 w-4" />
-                    Profile
+                    {t('nav.profile')}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="#"> 
                     <Settings className="mr-2 h-4 w-4" />
-                    Settings
+                    {t('button.settings')}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  Log out
+                  {t('nav.logout')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -142,11 +152,11 @@ export function Header() {
             <>
               <Button variant="ghost" asChild>
                 <Link href="/auth/login">
-                  <LogIn className="mr-2 h-4 w-4" /> Login
+                  <LogIn className="mr-2 h-4 w-4" /> {t('nav.login')}
                 </Link>
               </Button>
               <Button variant="default" className="bg-accent hover:bg-accent/90 text-accent-foreground" asChild>
-                <Link href="/auth/register">Register</Link>
+                <Link href="/auth/register">{t('nav.register')}</Link>
               </Button>
             </>
           )}

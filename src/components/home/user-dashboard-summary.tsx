@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { User, Program } from '@/types';
@@ -6,7 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { LayoutDashboard, BookOpenCheck, ChevronRight, CheckCircle, PlayCircle } from 'lucide-react';
+import { LayoutDashboard, BookOpenCheck, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 
 interface UserDashboardSummaryProps {
@@ -40,7 +39,7 @@ export function UserDashboardSummary({ user, activePrograms }: UserDashboardSumm
             Welcome back, {user.name}!
           </CardTitle>
           <CardDescription className="text-md text-muted-foreground">
-            Here's a quick look at your parenting journey.
+            Here&apos;s a quick look at your parenting journey.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -88,7 +87,7 @@ export function UserDashboardSummary({ user, activePrograms }: UserDashboardSumm
             <div className="text-center py-6">
               <BookOpenCheck className="h-12 w-12 text-primary mx-auto mb-3" />
               <p className="text-muted-foreground mb-3">
-                You're not currently active in any programs.
+                You&apos;re not currently active in any programs.
               </p>
               <Button asChild className="bg-accent hover:bg-accent/90 text-accent-foreground">
                 <Link href="/programs">Explore Programs</Link>

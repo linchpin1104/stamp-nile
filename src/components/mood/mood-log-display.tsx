@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { MoodEntry, MoodOption } from '@/types';
@@ -6,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format, parseISO } from 'date-fns';
 import { MOOD_OPTIONS } from './mood-selector'; 
-import { CalendarDays, Edit3, Activity, Users, MessageSquare } from 'lucide-react'; // Added Activity, Users, MessageSquare
+import { CalendarDays, Activity, Users, MessageSquare } from 'lucide-react'; // Added Activity, Users, MessageSquare
 import { Badge } from '@/components/ui/badge';
 
 interface MoodLogDisplayProps {
