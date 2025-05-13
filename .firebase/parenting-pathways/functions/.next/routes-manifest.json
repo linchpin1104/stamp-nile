@@ -1,0 +1,274 @@
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "dynamicRoutes": [
+    {
+      "page": "/admin/banners/[bannerId]/edit",
+      "regex": "^/admin/banners/([^/]+?)/edit(?:/)?$",
+      "routeKeys": {
+        "nxtPbannerId": "nxtPbannerId"
+      },
+      "namedRegex": "^/admin/banners/(?<nxtPbannerId>[^/]+?)/edit(?:/)?$"
+    },
+    {
+      "page": "/admin/program-discussions/[discussionId]",
+      "regex": "^/admin/program\\-discussions/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPdiscussionId": "nxtPdiscussionId"
+      },
+      "namedRegex": "^/admin/program\\-discussions/(?<nxtPdiscussionId>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/admin/programs/[programId]/edit",
+      "regex": "^/admin/programs/([^/]+?)/edit(?:/)?$",
+      "routeKeys": {
+        "nxtPprogramId": "nxtPprogramId"
+      },
+      "namedRegex": "^/admin/programs/(?<nxtPprogramId>[^/]+?)/edit(?:/)?$"
+    },
+    {
+      "page": "/admin/programs/[programId]/weeks/create",
+      "regex": "^/admin/programs/([^/]+?)/weeks/create(?:/)?$",
+      "routeKeys": {
+        "nxtPprogramId": "nxtPprogramId"
+      },
+      "namedRegex": "^/admin/programs/(?<nxtPprogramId>[^/]+?)/weeks/create(?:/)?$"
+    },
+    {
+      "page": "/admin/programs/[programId]/weeks/[weekId]/edit",
+      "regex": "^/admin/programs/([^/]+?)/weeks/([^/]+?)/edit(?:/)?$",
+      "routeKeys": {
+        "nxtPprogramId": "nxtPprogramId",
+        "nxtPweekId": "nxtPweekId"
+      },
+      "namedRegex": "^/admin/programs/(?<nxtPprogramId>[^/]+?)/weeks/(?<nxtPweekId>[^/]+?)/edit(?:/)?$"
+    },
+    {
+      "page": "/admin/users/[userId]/edit",
+      "regex": "^/admin/users/([^/]+?)/edit(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/admin/users/(?<nxtPuserId>[^/]+?)/edit(?:/)?$"
+    },
+    {
+      "page": "/admin/users/[userId]/view",
+      "regex": "^/admin/users/([^/]+?)/view(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/admin/users/(?<nxtPuserId>[^/]+?)/view(?:/)?$"
+    },
+    {
+      "page": "/programs/[slug]",
+      "regex": "^/programs/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/programs/(?<nxtPslug>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/programs/[slug]/report",
+      "regex": "^/programs/([^/]+?)/report(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/programs/(?<nxtPslug>[^/]+?)/report(?:/)?$"
+    },
+    {
+      "page": "/programs/[slug]/week/[weekId]",
+      "regex": "^/programs/([^/]+?)/week/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug",
+        "nxtPweekId": "nxtPweekId"
+      },
+      "namedRegex": "^/programs/(?<nxtPslug>[^/]+?)/week/(?<nxtPweekId>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/programs/[slug]/week/[weekId]/interactive-scenario/[scenarioId]",
+      "regex": "^/programs/([^/]+?)/week/([^/]+?)/interactive\\-scenario/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug",
+        "nxtPweekId": "nxtPweekId",
+        "nxtPscenarioId": "nxtPscenarioId"
+      },
+      "namedRegex": "^/programs/(?<nxtPslug>[^/]+?)/week/(?<nxtPweekId>[^/]+?)/interactive\\-scenario/(?<nxtPscenarioId>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/programs/[slug]/week/[weekId]/ox-quiz/[quizId]",
+      "regex": "^/programs/([^/]+?)/week/([^/]+?)/ox\\-quiz/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug",
+        "nxtPweekId": "nxtPweekId",
+        "nxtPquizId": "nxtPquizId"
+      },
+      "namedRegex": "^/programs/(?<nxtPslug>[^/]+?)/week/(?<nxtPweekId>[^/]+?)/ox\\-quiz/(?<nxtPquizId>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/programs/[slug]/week/[weekId]/psychological-test/[testId]",
+      "regex": "^/programs/([^/]+?)/week/([^/]+?)/psychological\\-test/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug",
+        "nxtPweekId": "nxtPweekId",
+        "nxtPtestId": "nxtPtestId"
+      },
+      "namedRegex": "^/programs/(?<nxtPslug>[^/]+?)/week/(?<nxtPweekId>[^/]+?)/psychological\\-test/(?<nxtPtestId>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/programs/[slug]/week/[weekId]/qa-session/[qaSessionId]",
+      "regex": "^/programs/([^/]+?)/week/([^/]+?)/qa\\-session/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug",
+        "nxtPweekId": "nxtPweekId",
+        "nxtPqaSessionId": "nxtPqaSessionId"
+      },
+      "namedRegex": "^/programs/(?<nxtPslug>[^/]+?)/week/(?<nxtPweekId>[^/]+?)/qa\\-session/(?<nxtPqaSessionId>[^/]+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/admin",
+      "regex": "^/admin(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin(?:/)?$"
+    },
+    {
+      "page": "/admin/analytics",
+      "regex": "^/admin/analytics(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/analytics(?:/)?$"
+    },
+    {
+      "page": "/admin/banners",
+      "regex": "^/admin/banners(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/banners(?:/)?$"
+    },
+    {
+      "page": "/admin/banners/create",
+      "regex": "^/admin/banners/create(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/banners/create(?:/)?$"
+    },
+    {
+      "page": "/admin/program-discussions",
+      "regex": "^/admin/program\\-discussions(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/program\\-discussions(?:/)?$"
+    },
+    {
+      "page": "/admin/program-progress",
+      "regex": "^/admin/program\\-progress(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/program\\-progress(?:/)?$"
+    },
+    {
+      "page": "/admin/programs",
+      "regex": "^/admin/programs(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/programs(?:/)?$"
+    },
+    {
+      "page": "/admin/programs/create",
+      "regex": "^/admin/programs/create(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/programs/create(?:/)?$"
+    },
+    {
+      "page": "/admin/users",
+      "regex": "^/admin/users(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/users(?:/)?$"
+    },
+    {
+      "page": "/admin/users/create",
+      "regex": "^/admin/users/create(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/users/create(?:/)?$"
+    },
+    {
+      "page": "/admin/vouchers",
+      "regex": "^/admin/vouchers(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/vouchers(?:/)?$"
+    },
+    {
+      "page": "/admin/week-content",
+      "regex": "^/admin/week\\-content(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/week\\-content(?:/)?$"
+    },
+    {
+      "page": "/auth/login",
+      "regex": "^/auth/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/login(?:/)?$"
+    },
+    {
+      "page": "/auth/register",
+      "regex": "^/auth/register(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/register(?:/)?$"
+    },
+    {
+      "page": "/favicon.ico",
+      "regex": "^/favicon\\.ico(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/profile",
+      "regex": "^/profile(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/profile(?:/)?$"
+    },
+    {
+      "page": "/programs",
+      "regex": "^/programs(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/programs(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "RSC",
+    "varyHeader": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch",
+    "prefetchHeader": "Next-Router-Prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "Next-Router-Segment-Prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments"
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  },
+  "rewrites": []
+}
