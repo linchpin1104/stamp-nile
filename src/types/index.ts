@@ -1,5 +1,3 @@
-
-
 export interface ProgramCompletion {
   programId: string;
   completionDate: string;
@@ -99,10 +97,22 @@ export interface Program {
   description: string;
   longDescription?: string;
   imageUrl: string;
-  targetAudience: string;
-  weeks: Week[];
+  targetAudience?: string;
+  paymentType: 'free' | 'paid';
+  price?: number;
+  currency?: string;
+  paymentLink?: string;
+  weeks?: Week[];
   tags?: string[];
+  status?: 'draft' | 'published' | 'archived';
   companySpecificDocuments?: CompanyDocument[];
+  mobileOptimized?: boolean;
+  mobileMetadata?: {
+    estimatedReadingTime?: number;
+    requiresWifi?: boolean;
+    offlineSupport?: boolean;
+    [key: string]: any;
+  };
 }
 
 export interface Week {
@@ -208,7 +218,19 @@ export interface VideoContent {
   description?: string;
   url: string;
   thumbnailUrl?: string;
-  duration?: string; 
+  duration?: string;
+  mobileUrl?: string;
+  aspectRatio?: string;
+  mobileAspectRatio?: string;
+  playerOptions?: {
+    controls?: boolean;
+    autoplay?: boolean;
+    preload?: 'auto' | 'metadata' | 'none';
+    responsive?: boolean;
+    fluid?: boolean;
+    playbackRates?: number[];
+    [key: string]: any;
+  };
 }
 
 export interface VideoChoiceGroup {
