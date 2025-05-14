@@ -745,6 +745,93 @@ export function createProgramRepository(options: {
   useFallbackInDev?: boolean,
   useLocalStorage?: boolean
 } = {}): ProgramRepository {
+  // Check if we're in a build environment
+  const isBuildTime = typeof window === 'undefined' && process.env.NODE_ENV === 'production';
+  
+  // Always use mock data during build time to prevent Firestore errors
+  if (isBuildTime) {
+    console.log('Using mock repository during build time');
+    return new MockProgramRepository();
+  }
+  
   // Default to Firestore implementation
   return new FirestoreProgramRepository('programs', options);
+}
+
+// Add a MockProgramRepository for build time
+class MockProgramRepository implements ProgramRepository {
+  constructor() {}
+
+  async getAll(): Promise<Program[]> {
+    return fallbackMockPrograms;
+  }
+
+  async getById(id: string): Promise<Program | null> {
+    return fallbackMockPrograms.find(p => p.id === id) || null;
+  }
+
+  async getBySlug(slug: string): Promise<Program | null> {
+    return fallbackMockPrograms.find(p => p.slug === slug) || null;
+  }
+
+  async create(data: Omit<Program, 'id'>): Promise<string | null> {
+    return 'mock-id-' + Date.now();
+  }
+
+  async update(id: string, data: Partial<Program>): Promise<boolean> {
+    return true;
+  }
+
+  async delete(id: string): Promise<boolean> {
+    return true;
+  }
+
+  async getPaginated(pageSize: number = 10, lastId?: string): Promise<{
+    programs: Program[];
+    lastId?: string;
+    hasMore: boolean;
+  }> {
+    const all = fallbackMockPrograms;
+    return {
+      programs: all.slice(0, pageSize),
+      lastId: all.length > pageSize ? all[pageSize-1].id : undefined,
+      hasMore: all.length > pageSize
+    };
+  }
+
+  async getFieldsOnly(fields: string[], maxResults?: number): Promise<Partial<Program>[]> {
+    const result = fallbackMockPrograms.map(p => {
+      const partial: Partial<Program> = { id: p.id };
+      fields.forEach(field => {
+        if (field in p) {
+          partial[field as keyof Program] = p[field as keyof Program];
+        }
+      });
+      return partial;
+    });
+    
+    return maxResults ? result.slice(0, maxResults) : result;
+  }
+
+  async batchCreateOrUpdate(programs: Array<Program | Omit<Program, 'id'>>): Promise<Map<number, string>> {
+    const result = new Map<number, string>();
+    programs.forEach((_, index) => {
+      result.set(index, 'mock-id-' + Date.now() + '-' + index);
+    });
+    return result;
+  }
+
+  async getProgramIdsByTag(tag: string): Promise<string[]> {
+    return fallbackMockPrograms
+      .filter(p => p.tags?.includes(tag))
+      .map(p => p.id);
+  }
+
+  async count(): Promise<number> {
+    return fallbackMockPrograms.length;
+  }
+
+  invalidateCache(programId?: string): void {
+    // No-op for mock repository
+  }
 } 

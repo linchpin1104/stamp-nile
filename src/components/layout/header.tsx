@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Stamp, Home, BookOpenText, UserCircle, LogIn, LogOut, Settings, ShieldCheck, Mail } from 'lucide-react';
+import { Stamp, Home, Book, UserCircle, LogIn, LogOut, Settings, ShieldCheck, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -61,7 +61,7 @@ export function Header() {
 
   const navItems = [
     { href: '/', label: t('nav.home'), icon: Home },
-    { href: '/programs', label: t('nav.programs'), icon: BookOpenText },
+    { href: '/programs', label: t('nav.programs'), icon: Book },
   ];
 
   if (pathname.startsWith('/admin')) {

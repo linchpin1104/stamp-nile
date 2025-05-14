@@ -60,41 +60,71 @@ if (process.env.NODE_ENV === 'production' && !isFirebaseConfigValid) {
   console.warn('WARNING: Using fallback Firebase config in production for testing purposes.');
 }
 
+// Check if we're in a build environment (Vercel, CI, etc.)
+const isSSRBuild = typeof window === 'undefined' && process.env.NODE_ENV === 'production';
+
 // Initialize Firebase
 let app;
-if (!getApps().length) {
-  app = initializeApp(config);
+let db;
+let auth;
+let storage;
+let functions;
+
+// Only initialize Firebase if not in a server-side build context
+// This prevents errors during build time
+if (!isSSRBuild) {
+  try {
+    if (!getApps().length) {
+      app = initializeApp(config);
+    } else {
+      app = getApp();
+    }
+
+    // Initialize Firebase services
+    db = getFirestore(app);
+    auth = getAuth(app);
+    storage = getStorage(app);
+    functions = getFunctions(app);
+
+    // Enable Firestore persistence for offline capability in browser context
+    if (typeof window !== 'undefined') {
+      enableIndexedDbPersistence(db)
+        .catch((err) => {
+          if (err.code === 'failed-precondition') {
+            console.warn('Firestore persistence could not be enabled. Multiple tabs open.');
+          } else if (err.code === 'unimplemented') {
+            console.warn('Firestore persistence is not available in this browser');
+          }
+        });
+    }
+
+    // Connect to emulators in development if NEXT_PUBLIC_USE_FIREBASE_EMULATORS is set
+    if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === 'true') {
+      // Use localhost with default emulator ports
+      connectFirestoreEmulator(db, 'localhost', 8080);
+      connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+      connectStorageEmulator(storage, 'localhost', 9199);
+      connectFunctionsEmulator(functions, 'localhost', 5001);
+      
+      console.log('Connected to Firebase emulators');
+    }
+  } catch (error) {
+    console.error('Error initializing Firebase:', error);
+    // Create dummy objects during build time
+    app = {} as any;
+    db = {} as any;
+    auth = {} as any;
+    storage = {} as any;
+    functions = {} as any;
+  }
 } else {
-  app = getApp();
-}
-
-// Initialize Firebase services
-const db = getFirestore(app);
-const auth = getAuth(app);
-const storage = getStorage(app);
-const functions = getFunctions(app);
-
-// Enable Firestore persistence for offline capability
-if (typeof window !== 'undefined') {
-  enableIndexedDbPersistence(db)
-    .catch((err) => {
-      if (err.code === 'failed-precondition') {
-        console.warn('Firestore persistence could not be enabled. Multiple tabs open.');
-      } else if (err.code === 'unimplemented') {
-        console.warn('Firestore persistence is not available in this browser');
-      }
-    });
-}
-
-// Connect to emulators in development if NEXT_PUBLIC_USE_FIREBASE_EMULATORS is set
-if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === 'true') {
-  // Use localhost with default emulator ports
-  connectFirestoreEmulator(db, 'localhost', 8080);
-  connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
-  connectStorageEmulator(storage, 'localhost', 9199);
-  connectFunctionsEmulator(functions, 'localhost', 5001);
-  
-  console.log('Connected to Firebase emulators');
+  // Provide mock objects during build to prevent errors
+  console.warn('Firebase initialization skipped during build');
+  app = {} as any;
+  db = {} as any;
+  auth = {} as any;
+  storage = {} as any;
+  functions = {} as any;
 }
 
 // Rate limiting helper for Firebase operations

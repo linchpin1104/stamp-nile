@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { BookOpenText } from 'lucide-react';
+import { Book } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getLightweightPrograms } from '@/services/programService';
 import { RollingBanner } from '@/components/home/rolling-banner';
@@ -38,7 +38,7 @@ export default async function HomePage() {
         <Button size="lg" asChild className="bg-accent hover:bg-accent/90 text-accent-foreground">
           <Link href="/programs">
             Explore All Programs
-            <BookOpenText className="ml-2 h-5 w-5" />
+            <Book className="ml-2 h-5 w-5" />
           </Link>
         </Button>
       </div>
