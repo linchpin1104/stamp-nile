@@ -629,7 +629,7 @@ export class FirestoreProgramRepository implements ProgramRepository {
           if ('id' in program && program.id) {
             // It's an update
             const programRef = doc(this.collection, program.id);
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // eslint-disable-next-line no-unused-vars
             const { id, ...programDataWithoutId } = program;
             
             // Apply converter's validation logic
