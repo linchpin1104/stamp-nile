@@ -12,6 +12,19 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'firebase/app': 'next/dist/server/empty.js',
+        'firebase/auth': 'next/dist/server/empty.js',
+        'firebase/firestore': 'next/dist/server/empty.js',
+        'firebase/functions': 'next/dist/server/empty.js',
+        'firebase/storage': 'next/dist/server/empty.js'
+      };
+    }
+    return config;
   }
 };
 
