@@ -9,7 +9,7 @@ module.exports = {
   theme: {
   	extend: {
       fontFamily: {
-        sans: ['var(--font-pretendard)'],
+        sans: ['var(--font-noto-sans)'],
       },
   		colors: {
   			background: 'hsl(var(--background))',

@@ -1,4 +1,4 @@
-import { pretendard } from '@/styles/fonts';
+import { notoSansKr } from '@/styles/fonts';
 import './globals.css';
 import { Providers } from '@/components/providers';
 import { Header } from '@/components/layout/header';
@@ -22,7 +22,7 @@ export default function RootLayout({
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased",
-          pretendard.variable
+          notoSansKr.variable
         )}
       >
         <Providers>
