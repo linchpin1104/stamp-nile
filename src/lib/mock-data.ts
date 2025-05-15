@@ -1,5 +1,3 @@
-
-
 import type { Program, User, InteractiveScenario, Week, ChecklistItem, ActionItem, TextContent, VideoContent, CompanyDocument, LearningElement, VideoChoiceGroup, PsychologicalTestContent, QuestionAnswerSessionContent, MissionReminderContent, OXQuizContent, PsychologicalTestQuestion, QAItem, OXQuizQuestion as OXQuizQuestionType, ActionItemContent, TodoListActionItemContent, ConversationalResponseActionItemContent, DialogueActivityActionItemContent, JournalPromptActionItemContent, ChildInfo, PsychologicalFactor, ResultComment, UserMission, ProgramCompletion, Voucher, Banner, TodoListItem, MoodEntry } from '@/types';
 import { format, subDays, addDays } from 'date-fns';
 
@@ -111,7 +109,7 @@ const p1w2StressTestContent: PsychologicalTestContent = {
   overallResultComments: [
     { id: generateId('orc-low'), scoreRange: [1, 2.5], categoryLabel: 'Generally Low Stress', comment: 'Your overall stress levels related to returning to work appear relatively low. Continue to build on your strengths and preparedness.' },
     { id: generateId('orc-mod'), scoreRange: [2.6, 3.5], categoryLabel: 'Moderate Stress Levels', comment: 'You are experiencing a moderate amount of stress. Identify specific areas of concern from the factor results and focus on strategies provided in this program.' },
-    { id: generateId('orc-high'), scoreRange: [3.6, 5], categoryLabel: 'Higher Stress Levels Indicated', comment: 'Returning to work seems to be a significant source of stress for you. It’s important to utilize all available supports and strategies. This program is designed to help you navigate these challenges.' },
+    { id: generateId('orc-high'), scoreRange: [3.6, 5], categoryLabel: 'Higher Stress Levels Indicated', comment: 'Returning to work seems to be a significant source of stress for you. It\'s important to utilize all available supports and strategies. This program is designed to help you navigate these challenges.' },
   ],
 };
 
